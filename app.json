@@ -1,30 +1,68 @@
 {
   "expo": {
-    "name": "tmp_app",
-    "slug": "tmp_app",
+    "name": "Centurio",
+    "slug": "centurio-budget",
     "version": "1.0.0",
+    "description": "Smart budget tracker with voice input, receipt scanning, and AI-powered expense tracking. Manage your finances effortlessly.",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "centurio",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0a0a"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.zerion.centurio",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Centurio uses your microphone to record voice memos so you can log expenses hands-free.",
+        "NSCameraUsageDescription": "Centurio uses your camera to scan receipts and automatically log your expenses.",
+        "NSPhotoLibraryUsageDescription": "Centurio accesses your photo library so you can choose a receipt image to scan.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.zerion.centurio",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0a0a0a"
       },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3e49c675-cdcd-48f5-bd5a-bc6883d7359f"
+      }
+    },
+    "plugins": [
+      "expo-av",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Centurio accesses your photo library so you can choose a receipt image to scan.",
+          "cameraPermission": "Centurio uses your camera to scan receipts and automatically log your expenses."
+        }
+      ]
+    ],
+    "owner": "119mgd"
   }
 }

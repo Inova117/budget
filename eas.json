@@ -1,0 +1,52 @@
+{
+    "cli": {
+        "version": ">= 10.0.0",
+        "appVersionSource": "remote"
+    },
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "http://192.168.100.2:54321",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+            }
+        },
+        "preview": {
+            "distribution": "internal",
+            "ios": {
+                "simulator": false
+            },
+            "android": {
+                "buildType": "apk"
+            },
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://dwsdipyzbdtvijiwbmch.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3c2RpcHl6YmR0dmlqaXdibWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3OTc1OTgsImV4cCI6MjA4NzM3MzU5OH0.GLJY0erfubYAWwGShvzx_RaoOYUTzsrrVLvMdq8kRww",
+                "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyBtBpCHF-Bu_ESn6z_LtOm-dPmJL-wB_vE"
+            }
+        },
+        "production": {
+            "autoIncrement": true,
+            "android": {
+                "buildType": "app-bundle"
+            },
+            "ios": {
+                "resourceClass": "m-medium"
+            },
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://dwsdipyzbdtvijiwbmch.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3c2RpcHl6YmR0dmlqaXdibWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3OTc1OTgsImV4cCI6MjA4NzM3MzU5OH0.GLJY0erfubYAWwGShvzx_RaoOYUTzsrrVLvMdq8kRww"
+            }
+        }
+    },
+    "submit": {
+        "production": {
+            "ios": {
+                "appleId": "YOUR_APPLE_ID@example.com",
+                "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+                "appleTeamId": "YOUR_APPLE_TEAM_ID"
+            }
+        }
+    }
+}

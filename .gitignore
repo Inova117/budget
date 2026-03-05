@@ -39,3 +39,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Environment — NEVER commit these
+.env
+.env.local
+.env.production
+supabase/.env.local
+
