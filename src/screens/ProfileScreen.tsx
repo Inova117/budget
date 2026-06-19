@@ -5,23 +5,17 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useApp, BudgetSettings } from '../context/AppContext';
+import { localMonthKey } from '../utils/dates';
+import { CURRENCIES } from '../utils/format';
 
 const MONTHLY_MAX = 5000;
 const CATEGORY_MAX = 1000;
 
-function formatMoney(n: number) {
-    return `$${Math.round(n).toLocaleString()}`;
-}
-
-/** Returns the progress bar color based on the used ratio */
-function progressColor(ratio: number): string {
-    if (ratio >= 0.9) return '#ff453a';  // red
-    if (ratio >= 0.7) return '#ffd60a';  // yellow
-    return '#30d158';                     // green
-}
-
 export default function ProfileScreen() {
-    const { budgetSettings, saveBudgetSettings, signOut, transactions, categories } = useApp();
+    const {
+        budgetSettings, saveBudgetSettings, signOut, transactions, categories,
+        currency, setCurrency, formatMoney,
+    } = useApp();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? dark : light;
@@ -70,11 +64,11 @@ export default function ProfileScreen() {
         flashSaved();
     };
 
-    // ── Monthly spending this month ───────────────────────────────────────────
-    const thisMonth = new Date().toISOString().slice(0, 7);
+    // ── Monthly spending this month (local calendar) ──────────────────────────
+    const thisMonth = localMonthKey(new Date());
     const monthlySpend = useMemo(() =>
         transactions
-            .filter(tx => tx.timestamp.slice(0, 7) === thisMonth)
+            .filter(tx => localMonthKey(tx.timestamp) === thisMonth)
             .reduce((s, tx) => s + tx.amount, 0),
         [transactions, thisMonth]
     );
@@ -83,7 +77,7 @@ export default function ProfileScreen() {
     const catSpend = useMemo(() => {
         const map: Record<string, number> = {};
         transactions
-            .filter(tx => tx.timestamp.slice(0, 7) === thisMonth)
+            .filter(tx => localMonthKey(tx.timestamp) === thisMonth)
             .forEach(tx => {
                 const cat = tx.inferred_category || 'Other';
                 map[cat] = (map[cat] || 0) + tx.amount;
@@ -101,7 +95,7 @@ export default function ProfileScreen() {
             <View style={styles.titleRow}>
                 <Text style={[styles.pageTitle, { color: theme.fg }]}>Budget</Text>
                 {savedVisible && (
-                    <Animated.Text style={[styles.savedBadge, { opacity: fadeAnim, color: '#30d158' }]}>
+                    <Animated.Text style={[styles.savedBadge, { opacity: fadeAnim, color: theme.muted }]}>
                         ✓ Saved
                     </Animated.Text>
                 )}
@@ -126,7 +120,8 @@ export default function ProfileScreen() {
                                 styles.progressInner,
                                 {
                                     width: `${Math.min((monthlySpend / monthly) * 100, 100)}%`,
-                                    backgroundColor: progressColor(monthlySpend / monthly),
+                                    backgroundColor: isDark ? '#f0f0f0' : '#111',
+                                    opacity: Math.max(0.15, Math.min(monthlySpend / monthly, 1)),
                                 }
                             ]}
                         />
@@ -151,7 +146,7 @@ export default function ProfileScreen() {
                     thumbTintColor={isDark ? '#ffffff' : '#111111'}
                 />
                 <View style={styles.sliderRange}>
-                    <Text style={[styles.sliderRangeText, { color: theme.muted }]}>$0</Text>
+                    <Text style={[styles.sliderRangeText, { color: theme.muted }]}>{formatMoney(0)}</Text>
                     <Text style={[styles.sliderRangeText, { color: theme.muted }]}>{formatMoney(MONTHLY_MAX)}</Text>
                 </View>
             </View>
@@ -182,7 +177,8 @@ export default function ProfileScreen() {
                                                 styles.progressInner,
                                                 {
                                                     width: `${Math.min(ratio * 100, 100)}%`,
-                                                    backgroundColor: progressColor(ratio),
+                                                    backgroundColor: isDark ? '#f0f0f0' : '#111',
+                                                    opacity: Math.max(0.15, Math.min(ratio, 1)),
                                                 }
                                             ]}
                                         />
@@ -218,6 +214,35 @@ export default function ProfileScreen() {
                 })}
             </View>
 
+            {/* Currency */}
+            <Text style={[styles.section, { color: theme.muted }]}>CURRENCY</Text>
+            <View style={[styles.card, { backgroundColor: theme.card }]}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyRow}>
+                    {CURRENCIES.map(c => {
+                        const active = c.code === currency;
+                        return (
+                            <TouchableOpacity
+                                key={c.code}
+                                onPress={() => setCurrency(c.code)}
+                                activeOpacity={0.8}
+                                accessibilityRole="button"
+                                accessibilityState={{ selected: active }}
+                                accessibilityLabel={`${c.label} (${c.code})`}
+                                style={[
+                                    styles.currencyChip,
+                                    { borderColor: active ? theme.fg : theme.border },
+                                    active && { backgroundColor: isDark ? '#1f1f1f' : '#f0f0f0' },
+                                ]}
+                            >
+                                <Text style={[styles.currencyCode, { color: active ? theme.fg : theme.muted }]}>
+                                    {c.symbol} {c.code}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </ScrollView>
+            </View>
+
             {/* Sign Out */}
             <TouchableOpacity
                 style={styles.signOutBtn}
@@ -251,6 +276,9 @@ const styles = StyleSheet.create({
     sliderRange: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -8 },
     sliderRangeText: { fontSize: 10 },
     divider: { height: StyleSheet.hairlineWidth, marginVertical: 12 },
+    currencyRow: { gap: 8, paddingVertical: 2 },
+    currencyChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
+    currencyCode: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
     signOutBtn: { marginTop: 32, alignItems: 'center', paddingVertical: 12 },
     signOutText: { fontSize: 13, fontWeight: '400' },
 });

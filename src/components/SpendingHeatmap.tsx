@@ -1,10 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Text, useColorScheme } from 'react-native';
 import { useApp } from '../context/AppContext';
-
-function formatDate(date: Date): string {
-    return date.toISOString().slice(0, 10);
-}
+import { localDayKey } from '../utils/dates';
 
 type DotColor = 'none' | 'within' | 'slightly_over' | 'over';
 
@@ -30,11 +27,11 @@ export default function SpendingHeatmap({ categoryFilter = null }: SpendingHeatm
         for (let i = 0; i < DAYS; i++) {
             const d = new Date(startDate);
             d.setDate(startDate.getDate() + i);
-            const dateStr = formatDate(d);
+            const dateStr = localDayKey(d);
 
-            // Calculate total for this specific day
+            // Calculate total for this specific day (local calendar)
             const dayTotal = transactions
-                .filter(tx => tx.timestamp.slice(0, 10) === dateStr)
+                .filter(tx => localDayKey(tx.timestamp) === dateStr)
                 .filter(tx => (categoryFilter ? tx.inferred_category === categoryFilter : true))
                 .reduce((sum, tx) => sum + tx.amount, 0);
 

@@ -46,3 +46,8 @@ yarn-error.*
 .env.production
 supabase/.env.local
 
+# Build artifacts (these embed env at build time — never commit)
+*.apk
+*.aab
+*.ipa
+

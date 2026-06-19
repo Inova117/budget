@@ -1,18 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { WeeklyReport } from '../utils/weeklyReport';
+import { useApp } from '../context/AppContext';
 
 type Props = {
     report: WeeklyReport;
 };
 
-function formatMoney(n: number): string {
-    return `$${Math.abs(n).toFixed(2)}`;
-}
-
 export default function WeeklyReportCard({ report }: Props) {
     const isDark = useColorScheme() === 'dark';
     const theme = isDark ? dark : light;
+    const { formatMoney: fmt } = useApp();
+    const formatMoney = (n: number) => fmt(Math.abs(n));
 
     const { weeks, thisWeek, changeAmount, changePct, trend } = report;
 

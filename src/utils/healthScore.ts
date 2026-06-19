@@ -3,7 +3,6 @@ import { Transaction, BudgetSettings } from '../context/AppContext';
 export type HealthScore = {
     score: number;       // 0–100
     grade: 'EXCELLENT' | 'CAUTION' | 'ATTENTION';
-    color: string;
     label: string;
 };
 
@@ -113,10 +112,10 @@ export function computeHealthScore(
 
     // ── Grade + color ─────────────────────────────────────────────────────────
     if (score >= 80) {
-        return { score, grade: 'EXCELLENT', color: '#30d158', label: 'Excellent' };
+        return { score, grade: 'EXCELLENT', label: 'Excellent' };
     } else if (score >= 50) {
-        return { score, grade: 'CAUTION', color: '#ffd60a', label: 'Caution' };
+        return { score, grade: 'CAUTION', label: 'Caution' };
     } else {
-        return { score, grade: 'ATTENTION', color: '#ff453a', label: 'Attention' };
+        return { score, grade: 'ATTENTION', label: 'Attention' };
     }
 }

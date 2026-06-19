@@ -5,8 +5,9 @@ import { useApp } from '../context/AppContext';
 import SpendingHeatmap from '../components/SpendingHeatmap';
 import WeeklyCheckin, { loadCheckinData, isCheckinDue, thisWeekMonday } from '../components/WeeklyCheckin';
 import WeeklyReportCard from '../components/WeeklyReportCard';
-import FilterBar, { Period } from '../components/FilterBar';
+import FilterBar from '../components/FilterBar';
 import { computeWeeklyReport } from '../utils/weeklyReport';
+import { periodStart as periodStartUtil, localDayKey, Period } from '../utils/dates';
 
 const ICON_MAP: Record<string, any> = {
     ShoppingCart, Utensils, Car, Film, Lightbulb, Heart, Plane, Droplet,
@@ -28,34 +29,9 @@ const CATEGORY_COLORS: Record<string, string> = {
     Other: '#94a3b8',
 };
 
-function formatCurrency(n: number) {
-    return `$${n.toFixed(2)}`;
-}
-
 function formatDate(iso: string) {
     const d = new Date(iso);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-/** Returns the start Date for a given period filter */
-function periodStart(period: Period): Date {
-    const now = new Date();
-    switch (period) {
-        case 'today': {
-            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-        }
-        case 'week': {
-            const day = now.getDay();
-            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-            return new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0, 0);
-        }
-        case 'month': {
-            return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-        }
-        case 'all':
-        default:
-            return new Date(0); // Unix epoch
-    }
 }
 
 function periodLabel(period: Period): string {
@@ -68,7 +44,7 @@ function periodLabel(period: Period): string {
 }
 
 export default function DashboardScreen() {
-    const { transactions, categories, weeklyBonus, setWeeklyBonus } = useApp();
+    const { transactions, categories, weeklyBonus, setWeeklyBonus, formatMoney } = useApp();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? dark : light;
@@ -87,7 +63,7 @@ export default function DashboardScreen() {
     useEffect(() => {
         const monday = thisWeekMonday();
         const hasTransactionsThisWeek = transactions.some(
-            tx => tx.timestamp.slice(0, 10) >= monday
+            tx => localDayKey(tx.timestamp) >= monday
         );
         if (!hasTransactionsThisWeek) return;
 
@@ -105,7 +81,7 @@ export default function DashboardScreen() {
 
     // ── Filtered transactions (drives all downstream calculations) ────────────
     const filteredTxs = useMemo(() => {
-        const start = periodStart(period);
+        const start = periodStartUtil(period);
         return transactions.filter(tx => new Date(tx.timestamp) >= start);
     }, [transactions, period]);
 
@@ -132,7 +108,7 @@ export default function DashboardScreen() {
     const groupedByDate = useMemo(() => {
         const groups: Record<string, typeof transactions> = {};
         filteredTxs.slice(0, 50).forEach(tx => {
-            const day = tx.timestamp.slice(0, 10);
+            const day = localDayKey(tx.timestamp);
             if (!groups[day]) groups[day] = [];
             groups[day].push(tx);
         });
@@ -155,7 +131,7 @@ export default function DashboardScreen() {
                 {/* Period Summary */}
                 <View style={[styles.card, { backgroundColor: theme.card }]}>
                     <Text style={[styles.cardLabel, { color: theme.muted }]}>{periodLabel(period)}</Text>
-                    <Text style={[styles.cardAmount, { color: theme.fg }]}>{formatCurrency(periodTotal)}</Text>
+                    <Text style={[styles.cardAmount, { color: theme.fg }]}>{formatMoney(periodTotal)}</Text>
                     <View style={styles.cardFooter}>
                         <Text style={[styles.cardSub, { color: theme.muted }]}>
                             {filteredTxs.length} transaction{filteredTxs.length !== 1 ? 's' : ''}
@@ -224,7 +200,7 @@ export default function DashboardScreen() {
                                                 ]}
                                             />
                                         </View>
-                                        <Text style={[styles.catAmount, { color: theme.muted }]}>{formatCurrency(total)}</Text>
+                                        <Text style={[styles.catAmount, { color: theme.muted }]}>{formatMoney(total)}</Text>
                                     </TouchableOpacity>
 
                                     {expandedCategory === cat && (
@@ -268,7 +244,7 @@ export default function DashboardScreen() {
                                                 <Text style={[styles.txVendor, { color: theme.fg }]}>{tx.vendor_name}</Text>
                                                 <Text style={[styles.txCat, { color: theme.muted }]}>{tx.inferred_category}</Text>
                                             </View>
-                                            <Text style={[styles.txAmt, { color: theme.fg }]}>{formatCurrency(tx.amount)}</Text>
+                                            <Text style={[styles.txAmt, { color: theme.fg }]}>{formatMoney(tx.amount)}</Text>
                                         </View>
                                     ))}
                                 </View>

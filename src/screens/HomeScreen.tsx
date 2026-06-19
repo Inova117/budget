@@ -1,7 +1,8 @@
 import React from 'react';
 import {
     View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert,
-    useColorScheme, Animated, Modal, Pressable, TextInput
+    useColorScheme, Animated, Modal, Pressable, TextInput, Vibration, Platform,
+    RefreshControl,
 } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { Audio } from 'expo-av';
@@ -9,70 +10,86 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { StatusBar } from 'expo-status-bar';
 import { useApp } from '../context/AppContext';
+import { localDayKey } from '../utils/dates';
 import SpendingHeatmap from '../components/SpendingHeatmap';
 import HealthScoreBadge from '../components/HealthScoreBadge';
 import ExpenseConfirmModal, { PendingExpense } from '../components/ExpenseConfirmModal';
-import { supabase } from '../../supabase';
+import { supabase } from '../lib/supabase';
 
-// ─── Audio parsing ─────────────────────────────────────────────────────────
+// Subtle haptic feedback (Android only — avoids the heavy default iOS buzz).
+const buzz = (ms: number) => { if (Platform.OS === 'android') Vibration.vibrate(ms); };
 
-async function parseExpensesFromFileUri(fileUri: string, categoryNames: string[]): Promise<any> {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
+type ParseResult = { transcript: string; expenses: PendingExpense[] };
 
-    const { data, error } = await supabase.functions.invoke('process-audio', {
-        body: { fileUri, categoryNames },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+function normalizeExpenses(raw: any[]): PendingExpense[] {
+    return (raw || []).map((e: any) => ({
+        amount: Number(e.amount) || 0,
+        vendor: e.vendor || e.vendor_name || 'Unknown',
+        vendor_name: e.vendor || e.vendor_name || 'Unknown',
+        inferred_category: e.inferred_category || 'Other',
+        confidence: typeof e.confidence === 'number' ? e.confidence : undefined,
+    }));
+}
+
+// ─── AI parsing (all server-side, JWT-validated; no API key in the client) ───
+
+// supabase-js throws FunctionsHttpError whose .message is always the generic
+// "Edge Function returned a non-2xx status code". The real reason is in the
+// JSON body on error.context — surface that so failures are diagnosable.
+async function edgeError(error: any): Promise<Error> {
+    try {
+        const body = await error?.context?.json?.();
+        if (body?.error) return new Error(body.error);
+    } catch { /* body wasn't JSON */ }
+    return new Error(error?.message || 'Request failed');
+}
+
+async function parseAudio(uri: string, categoryNames: string[]): Promise<ParseResult> {
+    const audioBase64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
     });
-
-    if (error) throw new Error(error.message);
-    return data.expenses || [];
+    const { data, error } = await supabase.functions.invoke('process-audio', {
+        body: { audioBase64, mimeType: 'audio/mp4', categoryNames },
+    });
+    if (error) throw await edgeError(error);
+    return { transcript: data.transcript || '', expenses: normalizeExpenses(data.expenses) };
 }
 
-async function uploadAndParseAudio(uri: string, categoryNames: string[]): Promise<any> {
-    const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-    const formData = new FormData();
-    // @ts-ignore
-    formData.append('metadata', JSON.stringify({ file: { mimeType: 'audio/mp4' } }), 'application/json');
-    // @ts-ignore
-    formData.append('file', { uri, name: 'expense.m4a', type: 'audio/mp4' });
-
-    const uploadRes = await fetch(
-        `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=multipart&key=${GEMINI_API_KEY}`,
-        { method: 'POST', body: formData }
-    );
-    const uploadText = await uploadRes.text();
-    if (!uploadRes.ok) throw new Error("Upload failed: " + uploadText);
-
-    const fileUri = JSON.parse(uploadText)?.file?.uri;
-    if (!fileUri) throw new Error("No file URI from upload");
-
-    return parseExpensesFromFileUri(fileUri, categoryNames);
+async function parseText(text: string, categoryNames: string[]): Promise<ParseResult> {
+    const { data, error } = await supabase.functions.invoke('process-text', {
+        body: { text, categoryNames },
+    });
+    if (error) throw await edgeError(error);
+    return { transcript: data.transcript || text, expenses: normalizeExpenses(data.expenses) };
 }
 
-// ─── Image / Receipt parsing ───────────────────────────────────────────────
-
-async function parseExpensesFromImage(imageUri: string, categoryNames: string[]): Promise<any> {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
-
+async function parseImage(imageUri: string, categoryNames: string[]): Promise<PendingExpense[]> {
     const base64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
     });
-
     const { data, error } = await supabase.functions.invoke('process-image', {
         body: { imageBase64: base64, categoryNames },
-        headers: { Authorization: `Bearer ${session.access_token}` },
     });
+    if (error) throw await edgeError(error);
+    return normalizeExpenses(data.expenses);
+}
 
-    if (error) throw new Error(error.message);
-    return data.expenses || [];
+// Offline / AI-failure fallback so a typed expense is never lost.
+function localParseFallback(text: string): PendingExpense[] {
+    const match = text.match(/(\d+([.,]\d+)?)/);
+    const amount = match ? parseFloat(match[1].replace(',', '.')) : 0;
+    const vendor = text.replace(/[$\d.,]+/g, '').trim() || 'Manual entry';
+    if (!amount) return [];
+    return [{ amount, vendor, vendor_name: vendor, inferred_category: 'Other', confidence: 0.4 }];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-    const { addTransactions, transactions, updateTransaction, deleteTransaction, categories, healthScore } = useApp();
+    const {
+        addTransactions, transactions, updateTransaction, deleteTransaction,
+        categories, healthScore, applyLearningRules, formatMoney, refresh,
+    } = useApp();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? dark : light;
@@ -94,6 +111,13 @@ export default function HomeScreen() {
     // Quick text input fallback
     const [showTextInput, setShowTextInput] = useState(false);
     const [quickText, setQuickText] = useState('');
+
+    // Pull-to-refresh
+    const [refreshing, setRefreshing] = useState(false);
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try { await refresh(); } finally { setRefreshing(false); }
+    };
 
     // Track recording start time for minimum duration enforcement
     const recordingStartTime = useRef<number>(0);
@@ -145,6 +169,7 @@ export default function HomeScreen() {
             const { recording: rec } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
             setRecording(rec);
             recordingStartTime.current = Date.now();
+            buzz(12);
             setStatusText('Listening...');
         } catch (err: any) {
             Alert.alert("Mic Error", err.message);
@@ -173,17 +198,10 @@ export default function HomeScreen() {
             if (!uri) throw new Error("No recording URI");
 
             const catNames = categories.map((c: any) => c.name);
-            const result = await uploadAndParseAudio(uri, catNames);
+            const { transcript, expenses } = await parseAudio(uri, catNames);
 
-            // result is { expenses, transcript } from updated edge function
-            const expenses: PendingExpense[] = (Array.isArray(result) ? result : result.expenses || []).map((e: any) => ({
-                ...e,
-                vendor: e.vendor || e.vendor_name || 'Unknown',
-                vendor_name: e.vendor || e.vendor_name || 'Unknown',
-            }));
-            const transcript: string = typeof result === 'object' && !Array.isArray(result) ? (result.transcript || '') : '';
-
-            setPendingExpenses(expenses);
+            buzz(15);
+            setPendingExpenses(applyLearningRules(expenses));
             setPendingTranscript(transcript);
             setShowConfirm(true);
             setStatusText('Hold to speak');
@@ -239,21 +257,21 @@ export default function HomeScreen() {
 
         try {
             const catNames = categories.map((c: any) => c.name);
-            const parsed = await parseExpensesFromImage(imageUri, catNames);
+            const parsed = await parseImage(imageUri, catNames);
 
-            if (parsed && parsed.length > 0) {
-                // Normalize vendor field
-                const normalized = parsed.map((tx: any) => ({
-                    ...tx,
-                    vendor_name: tx.vendor || tx.vendor_name || 'Unknown',
-                }));
-                await addTransactions(normalized);
-                setStatusText(`✓ ${parsed.length} item${parsed.length > 1 ? 's' : ''} scanned!`);
+            if (parsed.length > 0) {
+                // Route through the confirm modal (same as voice) so OCR errors
+                // are reviewable before saving.
+                buzz(15);
+                setPendingExpenses(applyLearningRules(parsed));
+                setPendingTranscript('Receipt scan');
+                setShowConfirm(true);
+                setStatusText('Hold to speak');
             } else {
                 setStatusText('No items found');
                 Alert.alert("No Items Found", "Make sure the receipt is clearly visible and well-lit.");
+                setTimeout(() => setStatusText('Hold to speak'), 3500);
             }
-            setTimeout(() => setStatusText('Hold to speak'), 3500);
         } catch (e: any) {
             setStatusText('Scan failed');
             setTimeout(() => setStatusText('Hold to speak'), 3000);
@@ -271,15 +289,11 @@ export default function HomeScreen() {
         setShowImageMenu(true);
     };
 
-    // Today's total
-    const today = new Date().toISOString().slice(0, 10);
-    const todayTotal = transactions
-        .filter(tx => tx.timestamp.slice(0, 10) === today)
-        .reduce((s, tx) => s + tx.amount, 0);
-
-    const todayTxs = transactions
-        .filter(tx => tx.timestamp.slice(0, 10) === today)
-        .slice(0, 5);
+    // Today's total (local day, not UTC)
+    const today = localDayKey(new Date());
+    const todayTxs = transactions.filter(tx => localDayKey(tx.timestamp) === today);
+    const todayTotal = todayTxs.reduce((s, tx) => s + tx.amount, 0);
+    const todayRecent = todayTxs.slice(0, 5);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -290,7 +304,9 @@ export default function HomeScreen() {
                 <View style={styles.scoreRow}>
                     {/* Daily total (left) */}
                     <View style={styles.amountBlock}>
-                        <Text style={[styles.amount, { color: theme.fg }]}>${todayTotal.toFixed(2)}</Text>
+                        <Text style={[styles.amount, { color: theme.fg }]} accessibilityRole="text">
+                            {formatMoney(todayTotal)}
+                        </Text>
                         <Text style={[styles.sublabel, { color: theme.muted }]}>SPENT TODAY</Text>
                     </View>
 
@@ -309,10 +325,13 @@ export default function HomeScreen() {
                 style={styles.txScrollContainer}
                 contentContainerStyle={styles.txScrollContent}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.muted} />
+                }
             >
-                {todayTxs.length > 0 ? (
+                {todayRecent.length > 0 ? (
                     <View style={[styles.todayList, { borderTopColor: theme.border }]}>
-                        {todayTxs.map((tx) => (
+                        {todayRecent.map((tx) => (
                             <TouchableOpacity
                                 key={tx.id}
                                 style={[styles.txRow, { borderBottomColor: theme.border }]}
@@ -323,12 +342,20 @@ export default function HomeScreen() {
                                     setEditCategory(tx.inferred_category);
                                 }}
                                 activeOpacity={0.7}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${tx.vendor_name}, ${formatMoney(tx.amount)}, ${tx.inferred_category}${tx.needs_review ? ', needs review' : ''}`}
+                                accessibilityHint="Edit this transaction"
                             >
-                                <View>
-                                    <Text style={[styles.txVendor, { color: theme.fg }]}>{tx.vendor_name}</Text>
-                                    <Text style={[styles.txCat, { color: theme.muted }]}>{tx.inferred_category}</Text>
+                                <View style={styles.txMeta}>
+                                    {tx.needs_review && (
+                                        <View style={styles.reviewDot} accessible={false} />
+                                    )}
+                                    <View>
+                                        <Text style={[styles.txVendor, { color: theme.fg }]}>{tx.vendor_name}</Text>
+                                        <Text style={[styles.txCat, { color: theme.muted }]}>{tx.inferred_category}</Text>
+                                    </View>
                                 </View>
-                                <Text style={[styles.txAmt, { color: theme.fg }]}>−${tx.amount.toFixed(2)}</Text>
+                                <Text style={[styles.txAmt, { color: theme.fg }]}>−{formatMoney(tx.amount)}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -354,6 +381,10 @@ export default function HomeScreen() {
                         onPress={() => setShowTextInput(true)}
                         disabled={isProcessing || !!recording}
                         activeOpacity={0.75}
+                        accessibilityRole="button"
+                        accessibilityLabel="Type an expense"
+                        accessibilityHint="Opens a text field to describe an expense"
+                        accessibilityState={{ disabled: isProcessing || !!recording }}
                     >
                         <View style={{ gap: 3, alignItems: 'flex-start' }}>
                             <View style={[styles.keyLine, { width: 16, backgroundColor: isProcessing ? theme.muted : theme.fg }]} />
@@ -393,6 +424,10 @@ export default function HomeScreen() {
                             onPressOut={stopRecording}
                             activeOpacity={1}
                             disabled={isProcessing}
+                            accessibilityRole="button"
+                            accessibilityLabel="Hold to record a voice expense"
+                            accessibilityHint="Press and hold, speak your expense, then release"
+                            accessibilityState={{ disabled: isProcessing, busy: isProcessing || !!recording }}
                         >
                             {(recording || isProcessing) && (
                                 <View style={[
@@ -419,6 +454,10 @@ export default function HomeScreen() {
                             onPress={onCameraPress}
                             disabled={isProcessing || !!recording}
                             activeOpacity={0.75}
+                            accessibilityRole="button"
+                            accessibilityLabel="Scan a receipt"
+                            accessibilityHint="Take a photo or pick a receipt image to log automatically"
+                            accessibilityState={{ disabled: isProcessing || !!recording }}
                         >
                             <View style={styles.camIconOuter}>
                                 <View style={[styles.camIconInner, { borderColor: isProcessing ? theme.muted : theme.fg }]} />
@@ -592,13 +631,18 @@ export default function HomeScreen() {
                 transcript={pendingTranscript}
                 categoryOptions={categories.map((c: any) => c.name)}
                 onConfirm={(confirmed) => {
-                    addTransactions(confirmed);
+                    // The user has now reviewed every row, so clear the low-confidence
+                    // flag — they shouldn't keep a "needs review" dot afterwards.
+                    addTransactions(confirmed.map(e => ({ ...e, confidence: 1 })), { transcript: pendingTranscript });
+                    buzz(15);
                     setShowConfirm(false);
                     setPendingExpenses([]);
+                    setPendingTranscript('');
                 }}
                 onDiscard={() => {
                     setShowConfirm(false);
                     setPendingExpenses([]);
+                    setPendingTranscript('');
                 }}
             />
 
@@ -638,16 +682,33 @@ export default function HomeScreen() {
                             <TouchableOpacity
                                 style={[styles.editBtn, { backgroundColor: theme.fg }]}
                                 onPress={async () => {
-                                    if (!quickText.trim()) return;
-                                    // Parse manually — extract amount and description
-                                    const match = quickText.match(/(\d+([.,]\d+)?)/)
-                                    const amount = match ? parseFloat(match[1].replace(',', '.')) : 0;
-                                    const vendor = quickText.replace(/[$\d.,]+/g, '').trim() || 'Manual entry';
-                                    setPendingExpenses([{ amount, vendor, vendor_name: vendor, inferred_category: 'Other' }]);
-                                    setPendingTranscript(quickText);
-                                    setQuickText('');
+                                    const text = quickText.trim();
+                                    if (!text) return;
                                     setShowTextInput(false);
-                                    setShowConfirm(true);
+                                    setQuickText('');
+                                    setIsProcessing(true);
+                                    setStatusText('Parsing with AI...');
+                                    try {
+                                        const catNames = categories.map((c: any) => c.name);
+                                        const { transcript, expenses } = await parseText(text, catNames);
+                                        const result = expenses.length ? expenses : localParseFallback(text);
+                                        setPendingExpenses(applyLearningRules(result));
+                                        setPendingTranscript(transcript);
+                                        setShowConfirm(true);
+                                    } catch (e: any) {
+                                        // Offline / AI failure → keep the entry via local parsing
+                                        const fallback = localParseFallback(text);
+                                        if (fallback.length) {
+                                            setPendingExpenses(applyLearningRules(fallback));
+                                            setPendingTranscript(text);
+                                            setShowConfirm(true);
+                                        } else {
+                                            Alert.alert('Could not parse', e.message || 'Try including an amount, e.g. "$30 super".');
+                                        }
+                                    } finally {
+                                        setIsProcessing(false);
+                                        setStatusText('Hold to speak');
+                                    }
                                 }}
                             >
                                 <Text style={{ color: theme.bg, fontWeight: '600', fontSize: 15 }}>Add</Text>
@@ -698,6 +759,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth,
     },
+    txMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    reviewDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#f5a623' },
     txVendor: { fontSize: 14, fontWeight: '500' },
     txCat: { fontSize: 11, marginTop: 2 },
     txAmt: { fontSize: 14, fontWeight: '300' },
@@ -710,9 +773,9 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'flex-end',
-        gap: 28,
+        paddingHorizontal: 52,
     },
 
     // Camera button
@@ -754,8 +817,6 @@ const styles = StyleSheet.create({
     typeInstead: { marginTop: -4, paddingVertical: 4 },
     typeInsteadText: { fontSize: 10, fontWeight: '400', letterSpacing: 0.2, textDecorationLine: 'underline' },
     keyLine: { height: 2, borderRadius: 1 },
-
-    typeInsteadText: { fontSize: 10, fontWeight: '400', letterSpacing: 0.2, textDecorationLine: 'underline' },
 
     // Modal
     modalOverlay: {

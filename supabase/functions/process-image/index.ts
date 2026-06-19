@@ -1,93 +1,45 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import {
+  corsHeaders, json, requireUser, categoriesFor, geminiGenerate, parseLoose, normalizeExpenses,
+} from '../_shared/parse.ts';
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
-
+// Scans a receipt. V2 default: ONE aggregated transaction (vendor + total) so a
+// grocery run doesn't explode into N rows. Pass { itemize: true } to extract
+// individual line items instead. Result is reviewed in the confirm modal.
 serve(async (req) => {
-  // CORS headers
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    })
-  }
-
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
-    // Verify user is authenticated
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+    await requireUser(req);
 
-    const { imageBase64, categoryNames } = await req.json()
+    const { imageBase64, categoryNames, itemize } = await req.json();
+    if (!imageBase64) return json({ error: 'Missing imageBase64' }, 400);
+    const cats = categoriesFor(categoryNames);
 
-    if (!imageBase64) {
-      return new Response(JSON.stringify({ error: 'Missing imageBase64' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+    const prompt = itemize
+      ? `Analyze this receipt and extract EACH line item with its price.
+Return ONLY raw JSON (no markdown):
+{"expenses":[{"amount":<number>,"vendor":"<store name>","inferred_category":"<category>","confidence":<0..1>}]}
+Known categories: ${cats.join(', ')}. Pick the best match; if none fit, invent a short English category name.
+If nothing is readable, return {"expenses":[]}.`
+      : `Analyze this receipt and return ONE expense representing the WHOLE receipt:
+the store/vendor name and the GRAND TOTAL actually paid (use the total/"total a pagar", not the subtotal, and not individual items).
+Return ONLY raw JSON (no markdown):
+{"expenses":[{"amount":<grand total>,"vendor":"<store name>","inferred_category":"<category>","confidence":<0..1>}]}
+confidence = how sure you are of the total and vendor (1 = certain).
+Known categories: ${cats.join(', ')}. Pick the best match; if none fit, invent a short English category name.
+If nothing is readable, return {"expenses":[]}.`;
 
-    // Build dynamic category list
-    const cats: string[] = (Array.isArray(categoryNames) && categoryNames.length > 0)
-      ? categoryNames
-      : ['Groceries', 'Dining', 'Transportation', 'Entertainment', 'Shopping', 'Utilities', 'Healthcare', 'Other']
+    const raw = await geminiGenerate([
+      { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } },
+      { text: prompt },
+    ]);
+    const parsed = parseLoose(raw);
+    const expenses = normalizeExpenses(Array.isArray(parsed) ? parsed : parsed?.expenses);
 
-    // Call Gemini API
-    const body = {
-      contents: [{
-        parts: [
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: imageBase64
-            }
-          },
-          {
-            text: `Analyze this receipt image and extract ALL items with their prices.\n\nReturn ONLY a valid raw JSON array (no markdown, no code fences):\n[{"amount": <number>, "vendor": "<store name>", "inferred_category": "<category>"}]\n\nKnown categories: ${cats.join(', ')}.\nPick the best matching category. If none fit well, invent a short, descriptive category name in English (e.g. "Veterinary", "Gym", "Taxi").\nIf nothing found, return [].`
-          }
-        ]
-      }],
-      generationConfig: { temperature: 0.0, responseMimeType: 'application/json' }
-    }
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const expenses = JSON.parse(cleaned)
-
-    return new Response(JSON.stringify({ expenses }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
-  } catch (error) {
-    console.error('Error processing image:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
+    return json({ expenses });
+  } catch (e) {
+    if (e instanceof Response) return e;
+    console.error('process-image error:', e);
+    return json({ error: (e as Error).message }, 500);
   }
-})
+});

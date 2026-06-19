@@ -4,13 +4,18 @@ import {
     TextInput, useColorScheme, Animated,
 } from 'react-native';
 import { Check, X, ChevronDown } from 'lucide-react-native';
+import { useApp } from '../context/AppContext';
+import { currencySymbol } from '../utils/format';
 
 export type PendingExpense = {
     amount: number;
     vendor: string;
     vendor_name?: string;
     inferred_category: string;
+    confidence?: number; // 0..1 from the AI; < 0.85 is flagged for review
 };
+
+const REVIEW_THRESHOLD = 0.85;
 
 type Props = {
     visible: boolean;
@@ -26,23 +31,34 @@ function ExpenseRow({
     index,
     categoryOptions,
     theme,
+    symbol,
     onChange,
 }: {
     expense: PendingExpense;
     index: number;
     categoryOptions: string[];
     theme: any;
+    symbol: string;
     onChange: (updated: PendingExpense) => void;
 }) {
     const [showCatPicker, setShowCatPicker] = useState(false);
+    const lowConfidence = typeof expense.confidence === 'number' && expense.confidence < REVIEW_THRESHOLD;
 
     return (
-        <View style={[styles.expenseRow, { borderColor: theme.border }]}>
+        <View style={[styles.expenseRow, { borderColor: lowConfidence ? '#f5a623' : theme.border }]}>
             {/* Amount */}
             <View style={styles.rowSection}>
-                <Text style={[styles.fieldLabel, { color: theme.muted }]}>AMOUNT</Text>
+                <View style={styles.labelRow}>
+                    <Text style={[styles.fieldLabel, { color: theme.muted }]}>AMOUNT</Text>
+                    {lowConfidence && (
+                        <View style={styles.reviewTag}>
+                            <View style={styles.reviewDot} />
+                            <Text style={styles.reviewTagText}>CHECK</Text>
+                        </View>
+                    )}
+                </View>
                 <View style={[styles.inputWrap, { borderColor: theme.border }]}>
-                    <Text style={[styles.currencySign, { color: theme.muted }]}>$</Text>
+                    <Text style={[styles.currencySign, { color: theme.muted }]}>{symbol}</Text>
                     <TextInput
                         style={[styles.input, { color: theme.fg }]}
                         keyboardType="decimal-pad"
@@ -119,6 +135,8 @@ export default function ExpenseConfirmModal({
 }: Props) {
     const isDark = useColorScheme() === 'dark';
     const theme = isDark ? dark : light;
+    const { currency } = useApp();
+    const symbol = currencySymbol(currency);
 
     const [local, setLocal] = useState<PendingExpense[]>(initialExpenses);
 
@@ -171,6 +189,7 @@ export default function ExpenseConfirmModal({
                                     index={i}
                                     categoryOptions={categoryOptions}
                                     theme={theme}
+                                    symbol={symbol}
                                     onChange={updated => updateExpense(i, updated)}
                                 />
                             ))}
@@ -268,6 +287,28 @@ const styles = StyleSheet.create({
         fontSize: 9,
         fontWeight: '700',
         letterSpacing: 2,
+    },
+    labelRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    reviewTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    reviewDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#f5a623',
+    },
+    reviewTagText: {
+        fontSize: 8,
+        fontWeight: '700',
+        letterSpacing: 1.5,
+        color: '#f5a623',
     },
     inputWrap: {
         flexDirection: 'row',

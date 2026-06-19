@@ -9,11 +9,11 @@ type Props = {
 export default function HealthScoreBadge({ healthScore }: Props) {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+    const fg = isDark ? '#f0f0f0' : '#111';
     const muted = isDark ? '#555' : '#aaa';
+    const border = isDark ? '#2a2a2a' : '#e5e5e5';
 
-    // Animate score number counting up on mount / change
     const animValue = useRef(new Animated.Value(0)).current;
-    const scoreRef = useRef(0);
 
     useEffect(() => {
         Animated.timing(animValue, {
@@ -21,10 +21,8 @@ export default function HealthScoreBadge({ healthScore }: Props) {
             duration: 800,
             useNativeDriver: false,
         }).start();
-        scoreRef.current = healthScore.score;
     }, [healthScore.score]);
 
-    // Interpolate for the animated number (we display it via a listener trick)
     const [displayScore, setDisplayScore] = React.useState(0);
     useEffect(() => {
         const id = animValue.addListener(({ value }) => {
@@ -35,14 +33,10 @@ export default function HealthScoreBadge({ healthScore }: Props) {
 
     return (
         <View style={styles.wrapper}>
-            {/* Outer subtle ring */}
-            <View style={[styles.ring, { borderColor: healthScore.color + '33' }]}>
-                {/* Inner filled dot */}
-                <View style={[styles.inner, { backgroundColor: healthScore.color + '18' }]}>
-                    <Text style={[styles.scoreNum, { color: healthScore.color }]}>
-                        {displayScore}
-                    </Text>
-                </View>
+            <View style={[styles.ring, { borderColor: border }]}>
+                <Text style={[styles.scoreNum, { color: fg }]}>
+                    {displayScore}
+                </Text>
             </View>
             <Text style={[styles.gradeLabel, { color: muted }]}>
                 {healthScore.grade}
@@ -57,17 +51,10 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     ring: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        borderWidth: 1.5,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    inner: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },

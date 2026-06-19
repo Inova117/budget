@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { Period } from '../utils/dates';
 
-export type Period = 'today' | 'week' | 'month' | 'all';
+export type { Period };
 
 const FILTERS: { key: Period; label: string }[] = [
     { key: 'today', label: 'Today' },

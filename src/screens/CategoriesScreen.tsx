@@ -52,7 +52,7 @@ function CategoryRow({
                     <Pencil size={16} color={theme.muted} strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onDelete} style={styles.iconBtn}>
-                    <Trash2 size={16} color="#f87171" strokeWidth={2} />
+                    <Trash2 size={16} color={theme.muted} strokeWidth={2} />
                 </TouchableOpacity>
             </View>
         </View>

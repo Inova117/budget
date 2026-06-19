@@ -4,6 +4,7 @@ import {
     useColorScheme, Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { localDayKey, startOfWeek } from '../utils/dates';
 
 const CHECKIN_STORAGE_KEY = 'weekly_checkin_data';
 const { height } = Dimensions.get('window');
@@ -33,17 +34,14 @@ const POINTS: [number, number][] = [
     [-7, +5],   // Q3: impulse purchase? (inverted: yes=bad)
 ];
 
-/** Returns YYYY-MM-DD string for today */
+/** Returns YYYY-MM-DD string for today (local calendar). */
 export function todayStr(): string {
-    return new Date().toISOString().slice(0, 10);
+    return localDayKey(new Date());
 }
 
-/** Returns YYYY-MM-DD for the Monday of the current week */
+/** Returns YYYY-MM-DD for the Monday of the current week (local calendar). */
 export function thisWeekMonday(): string {
-    const d = new Date();
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.getFullYear(), d.getMonth(), diff).toISOString().slice(0, 10);
+    return localDayKey(startOfWeek(new Date()));
 }
 
 /** Reads stored checkin data from AsyncStorage */
