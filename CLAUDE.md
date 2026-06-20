@@ -59,4 +59,5 @@ App.tsx ──auth gate──> AuthScreen | AppProvider → TabNavigator
 - Function secrets: `supabase secrets set GEMINI_API_KEY=...` (and the default
   `SUPABASE_URL` / `SUPABASE_ANON_KEY` are auto-provided for JWT validation).
 
-See `V2_RELEASE.md` for the V2 change log and the required deploy/rotation steps.
+See `docs/` for product, setup, security, changelog and store docs
+(`docs/SETUP.md` covers standing up a fresh Supabase project).

@@ -1,0 +1,72 @@
+# Google Play — listing & submission
+
+Merged store listing copy + submission checklist.
+
+## Listing
+
+**App name:** Centurio — Smart Budget Tracker
+**Category:** Finance · **Content rating:** Everyone
+
+**Short description (≤80):**
+Track expenses effortlessly with voice, receipts, and AI-powered insights.
+
+**Promo text (≤80):**
+AI-powered expense tracking. Voice, receipts, insights.
+
+**Full description:**
+
+**Centurio: Your Personal Finance Companion**
+
+Take control of your spending with Centurio, the intelligent budget tracker that
+makes expense logging effortless — on the go or when reviewing your finances.
+
+**🎤 Voice-powered logging** — Speak your expense and let AI do the work.
+"Twenty-five bucks at McDonald's" — done. No typing.
+
+**📸 Smart receipt scanning** — Snap a receipt and Centurio reads the vendor and
+total automatically (optional itemization), ready for you to confirm.
+
+**⌨️ Type it your way** — One sentence, multiple expenses: "30 super, 15 taxi" logs
+both, categorized.
+
+**📊 Visual insights** — 31-day spending heatmap, category breakdowns, real-time
+daily totals, weekly trend.
+
+**🧠 Learns your habits** — Correct a category once and Centurio remembers the
+vendor next time.
+
+**✏️ Full control** — Edit/delete any transaction, custom categories, multi-currency.
+
+**🔒 Secure & private** — Encrypted in transit and at rest; voice/receipt data is
+processed transiently, not permanently stored. No ads, no subscriptions.
+
+**🌙 Beautiful design** — Minimalist interface with automatic dark mode.
+
+**Tags:** budget, expense tracker, finance, voice input, receipt scanner, money
+management, personal finance, AI expense tracking
+
+**Support email:** <REPLACE_WITH_YOUR_EMAIL>
+**Privacy Policy URL:** host `docs/privacy-policy.en.md` publicly and put the URL here.
+
+## Assets
+- [x] App icon 512×512 — `assets/icon.png`
+- [x] Adaptive icon — `assets/adaptive-icon.png`
+- [ ] Feature graphic 1024×500 — **create** (app name + key features, dark theme #0a0a0a)
+- [ ] Screenshots (2–8, 1080×1920/2340): home + daily total, voice recording,
+      receipt scan, transaction edit, categories, dashboard breakdown, heatmap, profile
+
+## Submission checklist
+- [ ] Bump `app.json` version / let EAS auto-increment `versionCode`
+- [ ] Confirm permissions + usage strings in `app.json`
+- [ ] Build AAB: `eas build --platform android --profile production`
+- [ ] Create Play Console app ($25 one-time), category Finance
+- [ ] Upload AAB, release notes, countries, pricing (Free)
+- [ ] Add privacy policy URL + complete content rating
+- [ ] Upload feature graphic + screenshots
+- [ ] Internal testing → review on real devices → submit
+
+## Notes
+- The Gemini key is **not** embedded in the app (it's a server-side Supabase
+  secret) — see `docs/SECURITY.md`. Earlier listing notes claiming otherwise are
+  obsolete.
+- Replace the support email placeholder before submitting.
