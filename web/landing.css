@@ -388,3 +388,6 @@ p { margin: 0 0 16px; }
 .footer__bottom { position: relative; z-index: 1; margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--hairline); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--faint); font-size: 13px; }
 .footer__bottom a { color: var(--muted); } .footer__bottom a:hover { color: var(--fg); }
 @media (max-width: 720px) { .footer__inner { flex-direction: column; } .footer__links { gap: 36px; } }
+
+/* brand mark (real Denario logo) */
+.brand .brandmark { width: 26px; height: 26px; display: block; }

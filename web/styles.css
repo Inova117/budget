@@ -482,3 +482,11 @@ svg.i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round
 .skip-link { position: absolute; left: -9999px; }
 .skip-link:focus { left: 16px; top: 12px; background: var(--fg); color: var(--ink-inverse); padding: 8px 14px; border-radius: 8px; z-index: 100; }
 :focus-visible { outline: 2px solid var(--c-transport); outline-offset: 3px; border-radius: 4px; }
+
+/* brand mark (real Denario logo) — black on light, white on dark */
+.brand .brandmark { width: 24px; height: 24px; display: block; }
+.brand .logo-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  .brand .logo-light { display: none; }
+  .brand .logo-dark { display: block; }
+}
