@@ -1,5 +1,5 @@
 -- ============================================================================
--- Centurio — initial schema (consolidated for a fresh Supabase project).
+-- Denario — initial schema (consolidated for a fresh Supabase project).
 --
 -- Tables, RLS, the auth→users trigger, integrity constraints, growth guards,
 -- indexes and grants. This single file replaces the V1 incremental migrations.

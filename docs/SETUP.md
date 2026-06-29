@@ -1,6 +1,6 @@
-# Setup — Centurio on a fresh Supabase project
+# Setup — Denario on a fresh Supabase project
 
-End-to-end steps to stand up Centurio against a **brand-new** Supabase project.
+End-to-end steps to stand up Denario against a **brand-new** Supabase project.
 
 ## 1. Prerequisites
 - Node + Expo tooling (`npm install`).

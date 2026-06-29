@@ -1,4 +1,4 @@
-# Project Requirements Document (PRD): CenturioBudget (Working Title)
+# Project Requirements Document (PRD): DenarioBudget (Working Title)
 
 ## 1. Product Objectives
 **Core Philosophy:** "Invisible Input" — The user must exert near-zero effort to track expenses. The application handles the heavy lifting of parsing, categorization, and data entry.

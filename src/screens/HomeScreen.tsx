@@ -157,7 +157,7 @@ export default function HomeScreen() {
     const requestMicWithDisclosure = async () => {
         const ok = await confirm({
             title: 'Use your microphone?',
-            message: 'Centurio records what you say so the AI can log your expense. The audio is processed only to create the entry and is not stored.',
+            message: 'Denario records what you say so the AI can log your expense. The audio is processed only to create the entry and is not stored.',
             confirmLabel: 'Allow',
             cancelLabel: 'Not now',
         });
@@ -292,7 +292,7 @@ export default function HomeScreen() {
             if (!current.granted) {
                 const ok = await confirm({
                     title: 'Use your camera?',
-                    message: 'Centurio takes a photo of your receipt so the AI can log the expense. The photo is processed only to create the entry and is not stored.',
+                    message: 'Denario takes a photo of your receipt so the AI can log the expense. The photo is processed only to create the entry and is not stored.',
                     confirmLabel: 'Allow',
                     cancelLabel: 'Not now',
                 });

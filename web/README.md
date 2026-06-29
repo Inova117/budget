@@ -1,4 +1,4 @@
-# Centurio — Landing page + páginas legales
+# Denario — Landing page + páginas legales
 
 Sitio estático, bilingüe (ES/EN), sin dependencias, sin rastreadores, sin cookies de
 terceros. Mismo lenguaje gráfico que la app ("Breathe"). Listo para hostear en
@@ -39,7 +39,7 @@ python3 -m http.server 8080
   el contenido a la raíz). URL tipo `https://<usuario>.github.io/<repo>/`.
 - **Netlify / Vercel / Cloudflare Pages:** "Add new site" → conecta el repo →
   *publish directory* = `web`. Sin build command (es estático).
-- **Dominio propio (recomendado):** apunta tu dominio (p. ej. `centurio.app`) al host.
+- **Dominio propio (recomendado):** apunta tu dominio (p. ej. `denario.dev`) al host.
 
 ---
 

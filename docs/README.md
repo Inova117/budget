@@ -1,11 +1,11 @@
-# Centurio — Documentation
+# Denario — Documentation
 
 Invisible-input budget tracker: speak, type, or scan an expense → AI parses it →
 minimalist "Breathe" dashboard. React Native (Expo) + Supabase + Google Gemini.
 
 ## Index
 - [PRD.md](PRD.md) — product requirements & vision.
-- [SETUP.md](SETUP.md) — stand up Centurio on a fresh Supabase project (schema,
+- [SETUP.md](SETUP.md) — stand up Denario on a fresh Supabase project (schema,
   functions, secrets, env, build).
 - [SECURITY.md](SECURITY.md) — key protection, JWT validation, RLS, data handling.
 - [CHANGELOG.md](CHANGELOG.md) — V2 changes.

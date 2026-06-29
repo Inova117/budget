@@ -1,6 +1,6 @@
 # Android release checklist
 
-Everything needed to ship Centurio's first Android build to Google Play.
+Everything needed to ship Denario's first Android build to Google Play.
 Items marked **[you]** need your accounts/keys; the rest is already in the repo.
 
 ## 1. Backend (new Supabase project)

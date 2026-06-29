@@ -1,4 +1,4 @@
-# Centurio — Codebase Guide
+# Denario — Codebase Guide
 
 Invisible-input budget tracker. Speak, type, or scan an expense → AI parses it →
 minimalist "Breathe" dashboard. React Native (Expo SDK 54, RN 0.81, React 19) +

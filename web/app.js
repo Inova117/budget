@@ -1,4 +1,4 @@
-/* Centurio web — tiny, dependency-free, no cookies.
+/* Denario web — tiny, dependency-free, no cookies.
    Stores only a language preference in localStorage (functional, not tracking). */
 (function () {
   "use strict";

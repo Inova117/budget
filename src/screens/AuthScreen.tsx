@@ -79,7 +79,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
         >
             <View style={styles.inner}>
                 {/* Logo / wordmark */}
-                <Text style={[styles.logo, { color: theme.fg }]}>Centurio</Text>
+                <Text style={[styles.logo, { color: theme.fg }]}>Denario</Text>
                 <Text style={[styles.tagline, { color: theme.muted }]}>
                     {mode === 'login' ? 'Welcome back.' : 'Create your account.'}
                 </Text>

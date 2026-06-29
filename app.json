@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Centurio",
+    "name": "Denario",
     "slug": "centurio-budget",
     "version": "1.0.0",
     "description": "Smart budget tracker with voice input, receipt scanning, and AI-powered expense tracking. Manage your finances effortlessly.",
@@ -19,9 +19,9 @@
       "bundleIdentifier": "com.zerion.centurio",
       "buildNumber": "1",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Centurio uses your microphone to record voice memos so you can log expenses hands-free.",
-        "NSCameraUsageDescription": "Centurio uses your camera to scan receipts and automatically log your expenses.",
-        "NSPhotoLibraryUsageDescription": "Centurio accesses your photo library so you can choose a receipt image to scan.",
+        "NSMicrophoneUsageDescription": "Denario uses your microphone to record voice memos so you can log expenses hands-free.",
+        "NSCameraUsageDescription": "Denario uses your camera to scan receipts and automatically log your expenses.",
+        "NSPhotoLibraryUsageDescription": "Denario accesses your photo library so you can choose a receipt image to scan.",
         "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
@@ -60,8 +60,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Centurio accesses your photo library so you can choose a receipt image to scan.",
-          "cameraPermission": "Centurio uses your camera to scan receipts and automatically log your expenses."
+          "photosPermission": "Denario accesses your photo library so you can choose a receipt image to scan.",
+          "cameraPermission": "Denario uses your camera to scan receipts and automatically log your expenses."
         }
       ]
     ],

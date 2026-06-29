@@ -1,6 +1,6 @@
 # Security model
 
-How Centurio protects the Gemini key and user data. (Supersedes the V1
+How Denario protects the Gemini key and user data. (Supersedes the V1
 "SECURITY_IMPLEMENTATION" notes, where the key still partly shipped in the app.)
 
 ## Architecture
@@ -34,7 +34,7 @@ How Centurio protects the Gemini key and user data. (Supersedes the V1
 
 ## Data handling
 - Voice recordings and receipt images are processed transiently and not
-  permanently stored by Centurio (see `docs/privacy-policy.en.md`).
+  permanently stored by Denario (see `docs/privacy-policy.en.md`).
 - `transactions.raw_transcript` stores the user's own spoken/typed text (used by
   the habit engine), not third-party data.
 

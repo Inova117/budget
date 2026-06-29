@@ -1,7 +1,7 @@
 {
   "name": "centurio",
   "version": "2.0.0",
-  "description": "Centurio — invisible-input budget tracker (voice, text & receipt AI parsing)",
+  "description": "Denario — invisible-input budget tracker (voice, text & receipt AI parsing)",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",

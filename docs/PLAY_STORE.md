@@ -4,7 +4,7 @@ Merged store listing copy + submission checklist.
 
 ## Listing
 
-**App name:** Centurio — Smart Budget Tracker
+**App name:** Denario — Smart Budget Tracker
 **Category:** Finance · **Content rating:** Everyone
 
 **Short description (≤80):**
@@ -15,15 +15,15 @@ AI-powered expense tracking. Voice, receipts, insights.
 
 **Full description:**
 
-**Centurio: Your Personal Finance Companion**
+**Denario: Your Personal Finance Companion**
 
-Take control of your spending with Centurio, the intelligent budget tracker that
+Take control of your spending with Denario, the intelligent budget tracker that
 makes expense logging effortless — on the go or when reviewing your finances.
 
 **🎤 Voice-powered logging** — Speak your expense and let AI do the work.
 "Twenty-five bucks at McDonald's" — done. No typing.
 
-**📸 Smart receipt scanning** — Snap a receipt and Centurio reads the vendor and
+**📸 Smart receipt scanning** — Snap a receipt and Denario reads the vendor and
 total automatically (optional itemization), ready for you to confirm.
 
 **⌨️ Type it your way** — One sentence, multiple expenses: "30 super, 15 taxi" logs
@@ -32,7 +32,7 @@ both, categorized.
 **📊 Visual insights** — 31-day spending heatmap, category breakdowns, real-time
 daily totals, weekly trend.
 
-**🧠 Learns your habits** — Correct a category once and Centurio remembers the
+**🧠 Learns your habits** — Correct a category once and Denario remembers the
 vendor next time.
 
 **✏️ Full control** — Edit/delete any transaction, custom categories, multi-currency.
@@ -82,7 +82,7 @@ Declare these honestly — Google scrutinizes finance apps.
 
 ## Account deletion (required)
 Google requires apps with sign-in to let users delete their account + data.
-Centurio does this **in-app**: Profile → **Delete Account** → calls the
+Denario does this **in-app**: Profile → **Delete Account** → calls the
 `delete-account` edge function, which removes the user's row (cascading all their
 categories, transactions and learning rules) and the auth user. Mention this in
 the listing and add a deletion-request URL/email for the web requirement.

@@ -4,7 +4,7 @@
 // These URLs are shown to users in the signup consent and in the Profile screen,
 // and must match the URLs you put in Google Play Console. If you later move to a
 // custom domain, update this one constant.
-const BASE = 'https://zerionbudget.netlify.app';
+const BASE = 'https://denario.dev';
 
 export const LEGAL_URLS = {
     privacy: `${BASE}/legal/privacy.html`,

@@ -1,9 +1,9 @@
-# Centurio — Política de Privacidad
+# Denario — Política de Privacidad
 
 > **La Política de Privacidad oficial y siempre actualizada es la página web**
 > (usa esta URL en Google Play Console y dentro de la app):
 >
-> **https://zerionbudget.netlify.app/legal/privacy.html** (bilingüe, conmutador ES/EN)
+> **https://denario.dev/legal/privacy.html** (bilingüe, conmutador ES/EN)
 >
 > Archivo fuente: [`web/legal/privacy.html`](../web/legal/privacy.html). Edita ese archivo, no este.
 > _(Reemplaza el dominio por tu dominio real antes de publicar.)_
@@ -37,7 +37,7 @@ El audio y las imágenes se envían a estos proveedores solo para crear el regis
 
 ## Tus datos, tu control
 - En la app: **Perfil → Eliminar cuenta** borra permanentemente tu cuenta y todos tus datos.
-- Solicitud de borrado por web / detalles: https://zerionbudget.netlify.app/legal/eliminar-cuenta.html
+- Solicitud de borrado por web / detalles: https://denario.dev/legal/eliminar-cuenta.html
 - Derechos, conservación, transferencia internacional (EE. UU.), seguridad, menores (18+),
   notificación de brechas (LOPDP: 5 días a la autoridad / 3 días a usuarios) y el aviso de
   California (CCPA/CPRA) están cubiertos por completo en la Política web.

@@ -1,4 +1,4 @@
-# Centurio
+# Denario
 
 Invisible-input budget tracker — speak, type, or scan an expense → AI parses it →
 a minimalist "Breathe" dashboard. React Native (Expo) + Supabase + Google Gemini.
