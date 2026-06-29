@@ -3,7 +3,6 @@
         "version": ">= 10.0.0",
         "appVersionSource": "remote"
     },
-    "_comment": "Only the PUBLIC Supabase values live here (the anon key is RLS-protected and ships inside every app anyway). The Gemini key is NEVER here — it lives only as a Supabase Edge Function secret (supabase secrets set GEMINI_API_KEY=...) and never reaches the client.",
     "build": {
         "development": {
             "developmentClient": true,
