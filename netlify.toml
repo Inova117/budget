@@ -1,0 +1,42 @@
+# Netlify config — publishes the static landing + legal pages in /web.
+# This file overrides the dashboard Build settings, so you don't need to edit
+# them manually. (The Expo web app is a separate build; this site is the
+# marketing landing + the legal docs Google Play requires.)
+
+[build]
+  publish = "web"
+  command = "echo 'Static site — nothing to build.'"
+
+# Friendly short URLs (optional, nice to have)
+[[redirects]]
+  from = "/privacy"
+  to = "/legal/privacy.html"
+  status = 301
+[[redirects]]
+  from = "/terms"
+  to = "/legal/terms.html"
+  status = 301
+[[redirects]]
+  from = "/disclaimer"
+  to = "/legal/disclaimer.html"
+  status = 301
+[[redirects]]
+  from = "/cookies"
+  to = "/legal/cookies.html"
+  status = 301
+[[redirects]]
+  from = "/delete-account"
+  to = "/legal/eliminar-cuenta.html"
+  status = 301
+[[redirects]]
+  from = "/eliminar-cuenta"
+  to = "/legal/eliminar-cuenta.html"
+  status = 301
+
+# Basic security headers for a static informational site.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"

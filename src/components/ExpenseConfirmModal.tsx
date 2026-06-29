@@ -225,6 +225,14 @@ export default function ExpenseConfirmModal({
                         </View>
                     )}
 
+                    {/* Point-of-output AI-accuracy notice (shown right where the user
+                        relies on the result, before they save). */}
+                    {hasExpenses && (
+                        <Text style={[styles.aiNote, { color: theme.muted }]}>
+                            AI can make mistakes. Check each amount, vendor and category before saving.
+                        </Text>
+                    )}
+
                     {/* Actions */}
                     <View style={styles.actions}>
                         <TouchableOpacity
@@ -385,6 +393,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         lineHeight: 22,
+    },
+    aiNote: {
+        fontSize: 11,
+        lineHeight: 16,
+        textAlign: 'center',
+        marginTop: -4,
     },
     actions: {
         flexDirection: 'row',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     View, Text, ScrollView, StyleSheet,
-    TouchableOpacity, useColorScheme, Animated,
+    TouchableOpacity, useColorScheme, Animated, Linking,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useApp } from '../context/AppContext';
@@ -9,6 +9,7 @@ import { useConfirm, useToast } from '../components/FeedbackProvider';
 import { localMonthKey } from '../utils/dates';
 import { CURRENCIES } from '../utils/format';
 import { supabase } from '../lib/supabase';
+import { LEGAL_URLS } from '../lib/legal';
 
 const MONTHLY_MAX = 5000;
 
@@ -290,6 +291,30 @@ export default function ProfileScreen() {
                 </ScrollView>
             </View>
 
+            {/* Legal */}
+            <Text style={[styles.section, { color: theme.muted }]}>LEGAL</Text>
+            <View style={[styles.card, { backgroundColor: theme.card }]}>
+                {[
+                    { label: 'Privacy Policy', url: LEGAL_URLS.privacy },
+                    { label: 'Terms of Service', url: LEGAL_URLS.terms },
+                    { label: 'Financial & AI Disclaimer', url: LEGAL_URLS.disclaimer },
+                ].map((item, idx, arr) => (
+                    <View key={item.label}>
+                        <TouchableOpacity
+                            style={styles.legalRow}
+                            onPress={() => Linking.openURL(item.url)}
+                            activeOpacity={0.7}
+                            accessibilityRole="link"
+                            accessibilityLabel={item.label}
+                        >
+                            <Text style={[styles.legalText, { color: theme.fg }]}>{item.label}</Text>
+                            <Text style={[styles.legalChevron, { color: theme.muted }]}>›</Text>
+                        </TouchableOpacity>
+                        {idx < arr.length - 1 && <View style={[styles.divider, { backgroundColor: theme.border, marginVertical: 0 }]} />}
+                    </View>
+                ))}
+            </View>
+
             {/* Sign Out */}
             <TouchableOpacity
                 style={styles.signOutBtn}
@@ -341,6 +366,9 @@ const styles = StyleSheet.create({
     currencyRow: { gap: 8, paddingVertical: 2 },
     currencyChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
     currencyCode: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
+    legalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 },
+    legalText: { fontSize: 15, fontWeight: '400' },
+    legalChevron: { fontSize: 20, fontWeight: '300' },
     signOutBtn: { marginTop: 32, alignItems: 'center', paddingVertical: 12 },
     signOutText: { fontSize: 13, fontWeight: '400' },
     deleteAccountBtn: { marginTop: 4, alignItems: 'center', paddingVertical: 12 },

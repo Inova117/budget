@@ -1,75 +1,45 @@
-# Privacy Policy for Centurio
+# Centurio — Privacy Policy
 
-**Last Updated: February 25, 2026**
+> **The authoritative, always-current Privacy Policy is the web page**
+> (use this URL in Google Play Console and in-app):
+>
+> **https://centurio.app/legal/privacy.html** (bilingual ES/EN toggle)
+>
+> Source file: [`web/legal/privacy.html`](../web/legal/privacy.html). Edit that file, not this one.
+> _(Replace the domain with your real deployed domain before launch.)_
 
-## Introduction
+_Last updated: June 28, 2026_
 
-Centurio ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application.
+This summary reflects what the app actually does, so it matches the Google Play
+**Data safety** form. The full legal text lives at the URL above.
 
-## Information We Collect
+**Controller:** [your full legal name], operating as **Zerion Studio**, Ecuador.
+**Contact / privacy:** 117mgd@gmail.com
 
-### Personal Information
-- **Account Information**: Email address and authentication credentials (managed through Supabase Auth)
-- **Financial Data**: Transaction amounts, vendor names, categories, and timestamps that you input or record
-- **Voice Recordings**: Temporary audio recordings when you use voice input to log expenses (processed and immediately deleted)
-- **Receipt Images**: Photos you take or upload for expense scanning (processed and not permanently stored)
+## What we collect
+- **Account:** email + password (password stored hashed by our auth provider).
+- **Financial:** expense amounts, vendor names, categories, dates, budget, currency.
+- **Verbatim transcript** (`raw_transcript`): the exact text you dictate or type.
+- **Voice audio & receipt images:** processed transiently and **not permanently stored**.
+- **Learning rules** (vendor → category) and **preferences** (currency, budget).
 
-### Automatically Collected Information
-- **Device Information**: Device type, operating system version
-- **Usage Data**: App interactions and feature usage patterns
+We use **no** analytics, advertising, or crash-reporting SDKs. We do **not** sell data.
 
-## How We Use Your Information
+## Who processes it (sub-processors)
+- **Supabase, Inc.** (United States) — database, authentication, server functions.
+- **Google LLC** (Gemini API) — processes voice/text/images to extract expense data;
+  this content is not used to train Google's models per the Gemini API terms.
 
-We use your information to:
-- Provide expense tracking and budget management services
-- Process voice recordings and receipt images to extract transaction data using Google Gemini AI
-- Store your financial data securely in our database
-- Improve app functionality and user experience
-- Provide customer support
+Audio/images are sent to these providers only to create the entry. **We do not use OpenAI.**
 
-## Data Storage and Security
+## Your data, your control
+- In-app: **Profile → Delete account** permanently deletes your account and all data.
+- Web deletion request / details: https://centurio.app/legal/eliminar-cuenta.html
+- Rights, retention, international transfer (US), security, children (18+), breach
+  notification (LOPDP: 5 days to the authority / 3 days to users) and the
+  California (CCPA/CPRA) notice are covered in full in the web Privacy Policy.
 
-- **Database**: Your data is stored securely using Supabase (PostgreSQL database with encryption)
-- **Authentication**: Secure authentication via Supabase Auth
-- **Voice & Images**: Audio recordings and receipt images are processed through Google Gemini API and are not permanently stored on our servers
-- **Encryption**: All data transmission uses HTTPS/TLS encryption
-
-## Third-Party Services
-
-We use the following third-party services:
-- **Supabase**: Database and authentication services
-- **Google Gemini AI**: Voice transcription and receipt image processing
-
-These services have their own privacy policies governing their use of your information.
-
-## Data Retention
-
-- **Transaction Data**: Retained until you delete it or close your account
-- **Voice Recordings**: Deleted immediately after processing
-- **Receipt Images**: Not permanently stored; processed and discarded
-
-## Your Rights
-
-You have the right to:
-- Access your personal data
-- Correct inaccurate data
-- Delete your data and account
-- Export your data
-- Opt-out of data collection (by not using the app)
-
-## Children's Privacy
-
-Centurio is not intended for users under 13 years of age. We do not knowingly collect information from children under 13.
-
-## Changes to This Policy
-
-We may update this Privacy Policy from time to time. We will notify you of any changes by updating the "Last Updated" date.
-
-## Contact Us
-
-If you have questions about this Privacy Policy, please contact us at:
-- Email: support@centurio-app.com
-
-## Data Deletion
-
-To request deletion of your account and all associated data, please email support@centurio-app.com with your account email address.
+## Governing privacy law
+Ecuador's **LOPDP** (primary), plus **GDPR** (EU/UK) and **CCPA/CPRA** (California)
+for users in those regions. Complaints may be filed with Ecuador's Superintendency
+of Personal Data Protection (SPDP).

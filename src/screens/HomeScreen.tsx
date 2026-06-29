@@ -142,9 +142,35 @@ export default function HomeScreen() {
     // Camera button scale animation
     const camScale = useRef(new Animated.Value(1)).current;
 
+    // Whether the mic permission is already granted. We CHECK (never request) on
+    // mount; the actual request happens at first use, right after a prominent
+    // in-app disclosure — required by Google Play's sensitive-permissions policy.
+    const micGrantedRef = useRef(false);
+
     useEffect(() => {
-        Audio.requestPermissionsAsync();
+        Audio.getPermissionsAsync()
+            .then(p => { micGrantedRef.current = p.granted; })
+            .catch(() => { /* ignore */ });
     }, []);
+
+    // Prominent disclosure shown BEFORE the OS microphone prompt.
+    const requestMicWithDisclosure = async () => {
+        const ok = await confirm({
+            title: 'Use your microphone?',
+            message: 'Centurio records what you say so the AI can log your expense. The audio is processed only to create the entry and is not stored.',
+            confirmLabel: 'Allow',
+            cancelLabel: 'Not now',
+        });
+        if (!ok) return;
+        const req = await Audio.requestPermissionsAsync();
+        micGrantedRef.current = req.granted;
+        if (req.granted) {
+            setStatusText('Mic ready — hold to speak');
+            setTimeout(() => setStatusText('Hold to speak'), 2200);
+        } else {
+            toast.error('Microphone access is needed for voice logging. Enable it in Settings.');
+        }
+    };
 
     useEffect(() => {
         let scaleAnim: Animated.CompositeAnimation;
@@ -188,6 +214,9 @@ export default function HomeScreen() {
     const startRecording = async () => {
         if (Platform.OS === 'web') { toast.info('🎙️ Voice logging works in the mobile app'); return; }
         if (preparingRef.current || recordingRef.current) return; // guard double-start
+        // First-time use: show the disclosure + request permission, then let the
+        // user hold again. Granted users skip straight to recording (fast path).
+        if (!micGrantedRef.current) { await requestMicWithDisclosure(); return; }
         preparingRef.current = true;
         stopRequestedRef.current = false;
         try {
@@ -255,29 +284,34 @@ export default function HomeScreen() {
     const handleScanImage = async (source: 'camera' | 'gallery') => {
         setShowImageMenu(false);
 
-        // Request permissions
-        if (source === 'camera') {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-                toast.error('Camera permission is required to take a photo.');
-                return;
-            }
-        } else {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                toast.error('Photo library permission is required.');
-                return;
-            }
-        }
-
         let result: ImagePicker.ImagePickerResult;
         if (source === 'camera') {
+            // Prominent in-app disclosure BEFORE the OS camera prompt (Google Play
+            // sensitive-permissions policy). Only needed until permission is granted.
+            const current = await ImagePicker.getCameraPermissionsAsync();
+            if (!current.granted) {
+                const ok = await confirm({
+                    title: 'Use your camera?',
+                    message: 'Centurio takes a photo of your receipt so the AI can log the expense. The photo is processed only to create the entry and is not stored.',
+                    confirmLabel: 'Allow',
+                    cancelLabel: 'Not now',
+                });
+                if (!ok) return;
+                const req = await ImagePicker.requestCameraPermissionsAsync();
+                if (!req.granted) {
+                    toast.error('Camera permission is required to take a photo.');
+                    return;
+                }
+            }
             result = await ImagePicker.launchCameraAsync({
                 mediaTypes: ['images'],
                 quality: 0.85,
                 allowsEditing: true,
             });
         } else {
+            // Gallery uses the Android system Photo Picker — it needs NO storage /
+            // photo permission, so we never request one (Photo & Video Permissions
+            // policy). The OS picker only returns the single image the user selects.
             result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ['images'],
                 quality: 0.85,

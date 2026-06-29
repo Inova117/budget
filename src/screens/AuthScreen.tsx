@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,
-    useColorScheme, ActivityIndicator, KeyboardAvoidingView, Platform
+    useColorScheme, ActivityIndicator, KeyboardAvoidingView, Platform, Linking
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { CURRENCIES } from '../utils/format';
+import { LEGAL_URLS } from '../lib/legal';
 
 interface Props {
     onAuthSuccess: () => void;
@@ -31,6 +32,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [signupCurrency, setSignupCurrency] = useState('USD');
+    const [agreed, setAgreed] = useState(false);
     const [loading, setLoading] = useState(false);
     // Inline feedback (Alert.alert is a no-op on web, so errors must render in the UI).
     const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,10 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
         setInfo(null);
         if (!email.trim() || !password.trim()) {
             setError('Please enter your email and password.');
+            return;
+        }
+        if (mode === 'register' && !agreed) {
+            setError('Please accept the Terms, Privacy Policy and Disclaimer to create your account.');
             return;
         }
         setLoading(true);
@@ -138,6 +144,33 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
                     </View>
                 )}
 
+                {/* Clickwrap consent (registration only) — makes the Terms, Privacy
+                    Policy and Disclaimer an affirmatively-accepted agreement. */}
+                {mode === 'register' && (
+                    <View style={styles.agreeRow}>
+                        <TouchableOpacity
+                            onPress={() => { setAgreed(a => !a); if (error) setError(null); }}
+                            activeOpacity={0.7}
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: agreed }}
+                            accessibilityLabel="I agree to the Terms, Privacy Policy and Disclaimer"
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            style={[
+                                styles.checkbox,
+                                { borderColor: agreed ? theme.fg : theme.border, backgroundColor: agreed ? theme.fg : 'transparent' },
+                            ]}
+                        >
+                            {agreed && <Text style={[styles.checkboxTick, { color: theme.bg }]}>✓</Text>}
+                        </TouchableOpacity>
+                        <Text style={[styles.agreeText, { color: theme.muted }]}>
+                            I agree to the{' '}
+                            <Text style={[styles.link, { color: theme.fg }]} onPress={() => Linking.openURL(LEGAL_URLS.terms)}>Terms</Text>,{' '}
+                            <Text style={[styles.link, { color: theme.fg }]} onPress={() => Linking.openURL(LEGAL_URLS.privacy)}>Privacy Policy</Text>{' '}and{' '}
+                            <Text style={[styles.link, { color: theme.fg }]} onPress={() => Linking.openURL(LEGAL_URLS.disclaimer)}>Financial &amp; AI Disclaimer</Text>.
+                        </Text>
+                    </View>
+                )}
+
                 {/* Inline feedback — visible on web AND native */}
                 {error && (
                     <View style={styles.banner} accessibilityLiveRegion="polite">
@@ -215,6 +248,14 @@ const styles = StyleSheet.create({
     bannerInfoWrap: { backgroundColor: 'rgba(48,161,78,0.10)' },
     bannerError: { color: '#ff3b30', fontSize: 14, fontWeight: '500', textAlign: 'center' },
     bannerInfo: { color: '#30a14e', fontSize: 14, fontWeight: '500', textAlign: 'center' },
+    agreeRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 4, paddingRight: 4 },
+    checkbox: {
+        width: 22, height: 22, borderRadius: 6, borderWidth: 1.5,
+        alignItems: 'center', justifyContent: 'center', marginTop: 1,
+    },
+    checkboxTick: { fontSize: 13, fontWeight: '700', lineHeight: 15 },
+    agreeText: { flex: 1, fontSize: 12.5, lineHeight: 18, fontWeight: '300' },
+    link: { fontWeight: '500', textDecorationLine: 'underline' },
     currencyLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 2, marginBottom: 8, marginLeft: 2 },
     currencyRow: { gap: 8, paddingVertical: 2 },
     currencyChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
