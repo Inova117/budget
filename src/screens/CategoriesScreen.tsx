@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
     View, Text, ScrollView, StyleSheet, TouchableOpacity,
-    TextInput, Alert, Modal, useColorScheme, LayoutAnimation
+    TextInput, Modal, useColorScheme, LayoutAnimation
 } from 'react-native';
 import { Trash2, Pencil, Plus, X, Check, ShoppingCart, Utensils, Car, Film, Lightbulb, Heart, Plane, Droplet, ShoppingBag, Home, Package, Gamepad2, Dumbbell, Music, Book, Briefcase } from 'lucide-react-native';
 import { useApp } from '../context/AppContext';
+import { useConfirm, useToast } from '../components/FeedbackProvider';
 
 const ICON_PRESETS = [
     { name: 'ShoppingCart', component: ShoppingCart },
@@ -31,11 +32,10 @@ function getIconComponent(iconName?: string) {
 }
 
 function CategoryRow({
-    id, name, icon, isDark, theme,
-    onEdit, onDelete
+    name, icon, theme, onEdit, onDelete,
 }: {
-    id: string; name: string; icon?: string;
-    isDark: boolean; theme: any;
+    name: string; icon?: string;
+    theme: any;
     onEdit: () => void; onDelete: () => void;
 }) {
     const IconComponent = getIconComponent(icon);
@@ -48,10 +48,10 @@ function CategoryRow({
                 <Text style={[styles.rowName, { color: theme.fg }]}>{name}</Text>
             </View>
             <View style={styles.rowActions}>
-                <TouchableOpacity onPress={onEdit} style={styles.iconBtn}>
+                <TouchableOpacity onPress={onEdit} style={styles.iconBtn} accessibilityLabel={`Edit ${name}`}>
                     <Pencil size={16} color={theme.muted} strokeWidth={2} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={onDelete} style={styles.iconBtn}>
+                <TouchableOpacity onPress={onDelete} style={styles.iconBtn} accessibilityLabel={`Delete ${name}`}>
                     <Trash2 size={16} color={theme.muted} strokeWidth={2} />
                 </TouchableOpacity>
             </View>
@@ -61,6 +61,8 @@ function CategoryRow({
 
 export default function CategoriesScreen() {
     const { categories, createCategory, updateCategory, deleteCategory } = useApp();
+    const confirm = useConfirm();
+    const toast = useToast();
     const isDark = useColorScheme() === 'dark';
     const theme = isDark ? dark : light;
 
@@ -68,8 +70,6 @@ export default function CategoriesScreen() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [name, setName] = useState('');
     const [selectedIcon, setSelectedIcon] = useState(ICON_PRESETS[0].name);
-
-    const allCats = categories;
 
     const openCreate = () => {
         setEditingId(null);
@@ -86,7 +86,7 @@ export default function CategoriesScreen() {
     };
 
     const handleSave = async () => {
-        if (!name.trim()) { Alert.alert('Required', 'Please enter a category name.'); return; }
+        if (!name.trim()) { toast.error('Please enter a category name.'); return; }
         if (editingId) {
             await updateCategory(editingId, name.trim(), selectedIcon);
         } else {
@@ -96,28 +96,32 @@ export default function CategoriesScreen() {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     };
 
-    const handleDelete = (id: string, catName: string) => {
-        Alert.alert('Delete Category', `Delete "${catName}"? Transactions using it won't be deleted.`, [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(id) },
-        ]);
+    const handleDelete = async (id: string, catName: string) => {
+        const ok = await confirm({
+            title: `Delete "${catName}"?`,
+            message: "Transactions using it won't be deleted — they'll show as Uncategorized.",
+            confirmLabel: 'Delete',
+            destructive: true,
+        });
+        if (ok) deleteCategory(id);
     };
 
     return (
         <View style={[styles.container, { backgroundColor: theme.bg }]}>
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
                 <Text style={[styles.section, { color: theme.muted }]}>ALL CATEGORIES</Text>
+                <Text style={[styles.hint, { color: theme.muted }]}>
+                    Rename, re-icon or delete any of them. Set their monthly budget in the Budget tab.
+                </Text>
                 <View style={[styles.card, { backgroundColor: theme.card }]}>
-                    {allCats.length === 0 && (
+                    {categories.length === 0 && (
                         <Text style={[styles.empty, { color: theme.muted }]}>No categories yet. Tap + to add one.</Text>
                     )}
-                    {allCats.map(cat => (
+                    {categories.map(cat => (
                         <CategoryRow
                             key={cat.id}
-                            id={cat.id}
                             name={cat.name}
                             icon={cat.icon}
-                            isDark={isDark}
                             theme={theme}
                             onEdit={() => openEdit(cat)}
                             onDelete={() => handleDelete(cat.id, cat.name)}
@@ -147,11 +151,11 @@ export default function CategoriesScreen() {
                         {/* Icon picker */}
                         <Text style={[styles.label, { color: theme.muted }]}>ICON</Text>
                         <View style={styles.emojiGrid}>
-                            {ICON_PRESETS.map(({ name, component: IconComp }) => (
+                            {ICON_PRESETS.map(({ name: iconName, component: IconComp }) => (
                                 <TouchableOpacity
-                                    key={name}
-                                    style={[styles.emojiBtn, selectedIcon === name && { borderColor: theme.fg, borderWidth: 2 }]}
-                                    onPress={() => setSelectedIcon(name)}
+                                    key={iconName}
+                                    style={[styles.emojiBtn, selectedIcon === iconName && { borderColor: theme.fg, borderWidth: 2 }]}
+                                    onPress={() => setSelectedIcon(iconName)}
                                 >
                                     <IconComp size={20} color={theme.fg} strokeWidth={1.5} />
                                 </TouchableOpacity>
@@ -191,7 +195,8 @@ const dark = { bg: '#0a0a0a', fg: '#f0f0f0', muted: '#555', card: '#111', border
 const styles = StyleSheet.create({
     container: { flex: 1 },
     scroll: { padding: 20, paddingTop: 60, paddingBottom: 120 },
-    section: { fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 10, marginTop: 20 },
+    section: { fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 6, marginTop: 20 },
+    hint: { fontSize: 12, marginBottom: 12 },
     card: { borderRadius: 16, overflow: 'hidden' },
     empty: { fontSize: 13, padding: 16, textAlign: 'center' },
     row: {
@@ -200,7 +205,7 @@ const styles = StyleSheet.create({
     },
     rowIconContainer: { width: 32, alignItems: 'center', justifyContent: 'center' },
     rowName: { fontSize: 15, fontWeight: '400' },
-    rowBadge: { fontSize: 10, marginTop: 1, fontWeight: '600', letterSpacing: 1 },
+    rowMeta: { fontSize: 10, marginTop: 1, letterSpacing: 0.5 },
     rowActions: { flexDirection: 'row', gap: 12 },
     iconBtn: { padding: 4 },
     fab: {

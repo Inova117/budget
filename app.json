@@ -2,7 +2,7 @@
   "expo": {
     "name": "Centurio",
     "slug": "centurio-budget",
-    "version": "2.0.0",
+    "version": "1.0.0",
     "description": "Smart budget tracker with voice input, receipt scanning, and AI-powered expense tracking. Manage your finances effortlessly.",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

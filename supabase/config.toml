@@ -400,3 +400,7 @@ verify_jwt = true
 [functions.process-image]
 enabled = true
 verify_jwt = true
+
+[functions.delete-account]
+enabled = true
+verify_jwt = true

@@ -54,16 +54,15 @@ export function computeHealthScore(
         })
         .reduce((s, tx) => s + tx.amount, 0);
 
-    // ── Category spend ───────────────────────────────────────────────────────
-    const categoryLimits = budgetSettings.categoryLimits;
+    // ── Category spend (keyed by category_id, matching budget limits) ─────────
+    const categoryLimits = budgetSettings.categoryLimits; // keyed by category_id
     const limitedCategories = Object.keys(categoryLimits).filter(k => categoryLimits[k] > 0);
 
     const categorySpend: Record<string, number> = {};
     transactions
         .filter(tx => new Date(tx.timestamp) >= monthStart)
         .forEach(tx => {
-            const cat = tx.inferred_category || 'Other';
-            categorySpend[cat] = (categorySpend[cat] || 0) + tx.amount;
+            if (tx.category_id) categorySpend[tx.category_id] = (categorySpend[tx.category_id] || 0) + tx.amount;
         });
 
     // ── Factor 1: Budget adherence (50%) ─────────────────────────────────────

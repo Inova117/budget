@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, ActivityIndicator } from 'react-native';
 import { AppProvider } from './src/context/AppContext';
+import { FeedbackProvider } from './src/components/FeedbackProvider';
 import TabNavigator from './src/navigation/TabNavigator';
 import AuthScreen from './src/screens/AuthScreen';
 import { supabase } from './src/lib/supabase';
@@ -38,18 +39,22 @@ export default function App() {
   if (!session) {
     return (
       <SafeAreaProvider>
-        <AuthScreen onAuthSuccess={() => {/* session state updates via onAuthStateChange */ }} />
+        <FeedbackProvider>
+          <AuthScreen onAuthSuccess={() => {/* session state updates via onAuthStateChange */ }} />
+        </FeedbackProvider>
       </SafeAreaProvider>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <AppProvider>
-        <NavigationContainer>
-          <TabNavigator />
-        </NavigationContainer>
-      </AppProvider>
+      <FeedbackProvider>
+        <AppProvider>
+          <NavigationContainer>
+            <TabNavigator />
+          </NavigationContainer>
+        </AppProvider>
+      </FeedbackProvider>
     </SafeAreaProvider>
   );
 }

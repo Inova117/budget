@@ -134,13 +134,15 @@ export default function WeeklyCheckin({ visible, onComplete, onDismiss }: Props)
                     weeklyBonus: finalBonus,
                     history: [entry, ...history].slice(0, 12), // keep last 12 weeks
                 };
-                saveCheckinData(newData).then(() => {
-                    // Slide out then notify parent
+                const finish = () => {
+                    // Slide out then notify parent — even if the save failed, so the
+                    // check-in isn't re-prompted forever and the bonus still applies.
                     Animated.parallel([
                         Animated.timing(slideAnim, { toValue: height, duration: 350, useNativeDriver: true }),
                         Animated.timing(fadeAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
                     ]).start(() => onComplete(finalBonus));
-                });
+                };
+                saveCheckinData(newData).then(finish).catch(finish);
             });
         }
     };

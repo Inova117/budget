@@ -32,6 +32,8 @@ function ExpenseRow({
     categoryOptions,
     theme,
     symbol,
+    amountText,
+    onChangeAmount,
     onChange,
 }: {
     expense: PendingExpense;
@@ -39,10 +41,16 @@ function ExpenseRow({
     categoryOptions: string[];
     theme: any;
     symbol: string;
+    amountText: string;
+    onChangeAmount: (text: string) => void;
     onChange: (updated: PendingExpense) => void;
 }) {
     const [showCatPicker, setShowCatPicker] = useState(false);
     const lowConfidence = typeof expense.confidence === 'number' && expense.confidence < REVIEW_THRESHOLD;
+    // Include the AI's (possibly invented) category in the list so it's not lost
+    // after the first tap on a different category.
+    const inferred = expense.inferred_category;
+    const opts = inferred && !categoryOptions.includes(inferred) ? [inferred, ...categoryOptions] : categoryOptions;
 
     return (
         <View style={[styles.expenseRow, { borderColor: lowConfidence ? '#f5a623' : theme.border }]}>
@@ -57,13 +65,15 @@ function ExpenseRow({
                         </View>
                     )}
                 </View>
-                <View style={[styles.inputWrap, { borderColor: theme.border }]}>
+                <View style={[styles.inputWrap, { borderColor: expense.amount > 0 ? theme.border : '#ff3b30' }]}>
                     <Text style={[styles.currencySign, { color: theme.muted }]}>{symbol}</Text>
                     <TextInput
                         style={[styles.input, { color: theme.fg }]}
                         keyboardType="decimal-pad"
-                        value={String(expense.amount)}
-                        onChangeText={v => onChange({ ...expense, amount: parseFloat(v) || 0 })}
+                        value={amountText}
+                        onChangeText={onChangeAmount}
+                        placeholder="0.00"
+                        placeholderTextColor={theme.muted}
                         selectTextOnFocus
                     />
                 </View>
@@ -99,7 +109,7 @@ function ExpenseRow({
 
                 {showCatPicker && (
                     <View style={[styles.catList, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                        {categoryOptions.map(cat => (
+                        {opts.map(cat => (
                             <TouchableOpacity
                                 key={cat}
                                 style={[
@@ -139,17 +149,28 @@ export default function ExpenseConfirmModal({
     const symbol = currencySymbol(currency);
 
     const [local, setLocal] = useState<PendingExpense[]>(initialExpenses);
+    // Raw text per amount field, so "12." / "12.50" don't get mangled mid-typing.
+    const [amountTexts, setAmountTexts] = useState<string[]>([]);
 
     // Sync when new expenses come in
     React.useEffect(() => {
         setLocal(initialExpenses);
+        setAmountTexts(initialExpenses.map(e => (e.amount > 0 ? String(e.amount) : '')));
     }, [initialExpenses, visible]);
 
     const updateExpense = (index: number, updated: PendingExpense) => {
         setLocal(prev => prev.map((e, i) => i === index ? updated : e));
     };
 
+    const changeAmount = (index: number, text: string) => {
+        const cleaned = text.replace(/[^0-9.,]/g, '').replace(',', '.');
+        setAmountTexts(prev => prev.map((t, i) => i === index ? cleaned : t));
+        const n = parseFloat(cleaned);
+        setLocal(prev => prev.map((e, i) => i === index ? { ...e, amount: Number.isFinite(n) ? n : 0 } : e));
+    };
+
     const hasExpenses = local.length > 0;
+    const canSave = hasExpenses && local.every(e => e.amount > 0);
 
     return (
         <Modal visible={visible} transparent animationType="slide" presentationStyle="overFullScreen">
@@ -190,6 +211,8 @@ export default function ExpenseConfirmModal({
                                     categoryOptions={categoryOptions}
                                     theme={theme}
                                     symbol={symbol}
+                                    amountText={amountTexts[i] ?? ''}
+                                    onChangeAmount={text => changeAmount(i, text)}
                                     onChange={updated => updateExpense(i, updated)}
                                 />
                             ))}
@@ -213,12 +236,15 @@ export default function ExpenseConfirmModal({
                         </TouchableOpacity>
                         {hasExpenses && (
                             <TouchableOpacity
-                                style={[styles.btn, styles.confirmBtn, { backgroundColor: theme.fg }]}
-                                onPress={() => onConfirm(local)}
+                                style={[styles.btn, styles.confirmBtn, { backgroundColor: theme.fg, opacity: canSave ? 1 : 0.4 }]}
+                                onPress={() => canSave && onConfirm(local)}
+                                disabled={!canSave}
                                 activeOpacity={0.8}
                             >
                                 <Check size={16} color={theme.card} strokeWidth={2.5} />
-                                <Text style={[styles.btnText, { color: theme.card }]}>Save All</Text>
+                                <Text style={[styles.btnText, { color: theme.card }]}>
+                                    {canSave ? 'Save All' : 'Enter amounts'}
+                                </Text>
                             </TouchableOpacity>
                         )}
                     </View>

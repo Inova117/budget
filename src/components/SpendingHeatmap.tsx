@@ -6,13 +6,14 @@ import { localDayKey } from '../utils/dates';
 type DotColor = 'none' | 'within' | 'slightly_over' | 'over';
 
 interface SpendingHeatmapProps {
-    categoryFilter?: string | null;
+    categoryId?: string | null;
 }
 
-export default function SpendingHeatmap({ categoryFilter = null }: SpendingHeatmapProps) {
-    const { transactions, budgetSettings } = useApp();
+export default function SpendingHeatmap({ categoryId = null }: SpendingHeatmapProps) {
+    const { transactions, budgetSettings, categoryById } = useApp();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
+    const categoryName = categoryId ? categoryById.get(categoryId)?.name ?? null : null;
 
     // Build 31-day grid (e.g. 7 columns of 5, or just wrap in flex)
     const grid = useMemo(() => {
@@ -32,28 +33,32 @@ export default function SpendingHeatmap({ categoryFilter = null }: SpendingHeatm
             // Calculate total for this specific day (local calendar)
             const dayTotal = transactions
                 .filter(tx => localDayKey(tx.timestamp) === dateStr)
-                .filter(tx => (categoryFilter ? tx.inferred_category === categoryFilter : true))
+                .filter(tx => (categoryId ? tx.category_id === categoryId : true))
                 .reduce((sum, tx) => sum + tx.amount, 0);
 
-            // Daily limits are gone from user UI, but for heatmap intensity
-            // we can derive a daily threshold from the monthly limit
-            const limit = categoryFilter && budgetSettings.categoryLimits[categoryFilter]
-                ? budgetSettings.categoryLimits[categoryFilter] / 30
+            // Daily threshold derived from the monthly (or per-category) limit.
+            const limit = categoryId && budgetSettings.categoryLimits[categoryId]
+                ? budgetSettings.categoryLimits[categoryId] / 30
                 : budgetSettings.monthlyLimit / 30;
 
             let status: DotColor = 'none';
+            // Only color by budget when one is actually set (else everything reads "over").
             if (dayTotal > 0) {
-                const ratio = dayTotal / (limit || 1); // fallback to 1 to avoid div0
-                if (ratio <= 1.0) status = 'within';
-                else if (ratio <= 1.5) status = 'slightly_over';
-                else status = 'over';
+                if (limit <= 0) {
+                    status = 'within';
+                } else {
+                    const ratio = dayTotal / limit;
+                    if (ratio <= 1.0) status = 'within';
+                    else if (ratio <= 1.5) status = 'slightly_over';
+                    else status = 'over';
+                }
             }
 
             days.push({ date: dateStr, status });
         }
 
         return days;
-    }, [transactions, budgetSettings, categoryFilter]);
+    }, [transactions, budgetSettings, categoryId]);
 
     const dotColor = (status: DotColor) => {
         switch (status) {
@@ -67,7 +72,7 @@ export default function SpendingHeatmap({ categoryFilter = null }: SpendingHeatm
     return (
         <View style={styles.wrapper}>
             <Text style={[styles.title, { color: isDark ? '#666' : '#aaa' }]}>
-                {categoryFilter ? `${categoryFilter.toUpperCase()} — 31 DAYS` : 'SPENDING PULSE — 31 DAYS'}
+                {categoryName ? `${categoryName.toUpperCase()} — 31 DAYS` : 'SPENDING PULSE — 31 DAYS'}
             </Text>
 
             {/* We use flexWrap to allow the 31 dots to neatly wrap depending on screen width */}
@@ -81,7 +86,7 @@ export default function SpendingHeatmap({ categoryFilter = null }: SpendingHeatm
             </View>
 
             {/* Legend */}
-            {!categoryFilter && (
+            {!categoryId && (
                 <View style={styles.legend}>
                     {(['none', 'within', 'slightly_over', 'over'] as DotColor[]).map(s => (
                         <View key={s} style={styles.legendItem}>

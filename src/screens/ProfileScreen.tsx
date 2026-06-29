@@ -4,37 +4,41 @@ import {
     TouchableOpacity, useColorScheme, Animated,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { useApp, BudgetSettings } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
+import { useConfirm, useToast } from '../components/FeedbackProvider';
 import { localMonthKey } from '../utils/dates';
 import { CURRENCIES } from '../utils/format';
+import { supabase } from '../lib/supabase';
 
 const MONTHLY_MAX = 5000;
-const CATEGORY_MAX = 1000;
 
 export default function ProfileScreen() {
     const {
-        budgetSettings, saveBudgetSettings, signOut, transactions, categories,
+        budgetSettings, setMonthlyLimit, setCategoryLimit, signOut, transactions, categories,
         currency, setCurrency, formatMoney,
     } = useApp();
+    const confirm = useConfirm();
+    const toast = useToast();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? dark : light;
 
-    // Use categories from context, fall back to a base list
-    const CATEGORIES = categories.length > 0
-        ? categories.map(c => c.name)
-        : ['Groceries', 'Dining', 'Transportation', 'Entertainment', 'Shopping', 'Utilities', 'Healthcare', 'Other'];
-
     const [monthly, setMonthly] = useState(budgetSettings.monthlyLimit);
-    const [catLimits, setCatLimits] = useState<Record<string, number>>(
-        Object.fromEntries(CATEGORIES.map(c => [c, budgetSettings.categoryLimits[c] || 0]))
-    );
+    // Transient slider values while dragging (cleared on release). Source of
+    // truth stays budgetSettings so nothing goes stale.
+    const [draft, setDraft] = useState<Record<string, number>>({});
 
-    // Sync when context loads
+    // Sync the local slider value when the budget loads/changes elsewhere.
     useEffect(() => {
         setMonthly(budgetSettings.monthlyLimit);
-        setCatLimits(Object.fromEntries(CATEGORIES.map(c => [c, budgetSettings.categoryLimits[c] || 0])));
-    }, [budgetSettings]);
+    }, [budgetSettings.monthlyLimit]);
+
+    const limitFor = (id: string) => draft[id] ?? budgetSettings.categoryLimits[id] ?? 0;
+    const saveCatLimit = async (id: string, v: number) => {
+        await setCategoryLimit(id, v);
+        setDraft(prev => { const n = { ...prev }; delete n[id]; return n; });
+        flashSaved();
+    };
 
     // ── Saved feedback ────────────────────────────────────────────────────────
     const [savedVisible, setSavedVisible] = useState(false);
@@ -51,16 +55,8 @@ export default function ProfileScreen() {
         ]).start(() => setSavedVisible(false));
     };
 
-    // ── Auto-save helpers ─────────────────────────────────────────────────────
-    const doSave = async (newMonthly: number, newCatLimits: Record<string, number>) => {
-        const parsed: BudgetSettings = {
-            dailyLimit: newMonthly / 30,
-            monthlyLimit: newMonthly,
-            categoryLimits: Object.fromEntries(
-                Object.entries(newCatLimits).filter(([, v]) => v > 0)
-            ),
-        };
-        await saveBudgetSettings(parsed);
+    const saveMonthly = async (v: number) => {
+        await setMonthlyLimit(v);
         flashSaved();
     };
 
@@ -73,17 +69,46 @@ export default function ProfileScreen() {
         [transactions, thisMonth]
     );
 
-    // Per-category spend this month
-    const catSpend = useMemo(() => {
-        const map: Record<string, number> = {};
+    // Spent this month per category_id (drives the per-category progress).
+    const catSpentById = useMemo(() => {
+        const m: Record<string, number> = {};
         transactions
             .filter(tx => localMonthKey(tx.timestamp) === thisMonth)
-            .forEach(tx => {
-                const cat = tx.inferred_category || 'Other';
-                map[cat] = (map[cat] || 0) + tx.amount;
-            });
-        return map;
+            .forEach(tx => { if (tx.category_id) m[tx.category_id] = (m[tx.category_id] || 0) + tx.amount; });
+        return m;
     }, [transactions, thisMonth]);
+
+    // How much of the monthly cap is split across categories.
+    const allocated = useMemo(
+        () => Object.values(budgetSettings.categoryLimits).reduce((s, v) => s + v, 0),
+        [budgetSettings.categoryLimits]
+    );
+    const overAllocated = monthly > 0 && allocated > monthly;
+
+    // ── "Safe to spend today" = remaining budget / days left in the month ─────
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysLeft = Math.max(1, daysInMonth - now.getDate() + 1);
+    const remaining = Math.max(0, monthly - monthlySpend);
+    const safeToday = monthly > 0 ? remaining / daysLeft : 0;
+
+    const handleDeleteAccount = async () => {
+        const ok = await confirm({
+            title: 'Delete account?',
+            message: 'This permanently deletes your account and all your data. This cannot be undone.',
+            confirmLabel: 'Delete account',
+            destructive: true,
+        });
+        if (!ok) return;
+        try {
+            const { error } = await supabase.functions.invoke('delete-account');
+            if (error) throw error;
+            toast.success('Account deleted');
+            await signOut();
+        } catch (e: any) {
+            toast.error(e?.message || 'Could not delete account. Try again.');
+        }
+    };
 
     return (
         <ScrollView
@@ -101,8 +126,19 @@ export default function ProfileScreen() {
                 )}
             </View>
             <Text style={[styles.pageSubtitle, { color: theme.muted }]}>
-                Adjust limits below. Changes save automatically when you lift your finger.
+                Set your monthly cap, then split it across categories. Saves automatically.
             </Text>
+
+            {/* Safe to spend today */}
+            {monthly > 0 && (
+                <View style={[styles.heroCard, { backgroundColor: theme.card }]}>
+                    <Text style={[styles.heroLabel, { color: theme.muted }]}>SAFE TO SPEND TODAY</Text>
+                    <Text style={[styles.heroValue, { color: theme.fg }]}>{formatMoney(safeToday)}</Text>
+                    <Text style={[styles.heroSub, { color: theme.muted }]}>
+                        {formatMoney(remaining)} left · {daysLeft} day{daysLeft !== 1 ? 's' : ''} to go
+                    </Text>
+                </View>
+            )}
 
             {/* Monthly Total */}
             <Text style={[styles.section, { color: theme.muted }]}>TOTAL MONTHLY LIMIT</Text>
@@ -140,7 +176,7 @@ export default function ProfileScreen() {
                     step={25}
                     value={monthly}
                     onValueChange={setMonthly}
-                    onSlidingComplete={v => doSave(v, catLimits)}
+                    onSlidingComplete={v => saveMonthly(v)}
                     minimumTrackTintColor={isDark ? '#f0f0f0' : '#111'}
                     maximumTrackTintColor={isDark ? '#2a2a2a' : '#e5e5e5'}
                     thumbTintColor={isDark ? '#ffffff' : '#111111'}
@@ -151,62 +187,73 @@ export default function ProfileScreen() {
                 </View>
             </View>
 
-            {/* Per-Category Limits */}
-            <Text style={[styles.section, { color: theme.muted }]}>BY CATEGORY (OPTIONAL)</Text>
+            {/* By category — split the monthly cap */}
+            <View style={styles.catSectionHeader}>
+                <Text style={[styles.section, { color: theme.muted, marginTop: 20 }]}>BY CATEGORY</Text>
+                {monthly > 0 && (
+                    <Text style={[styles.allocLabel, { color: overAllocated ? '#ff3b30' : theme.muted }]}>
+                        {formatMoney(allocated)} of {formatMoney(monthly)}
+                        {overAllocated ? ' · over' : ` · ${formatMoney(Math.max(monthly - allocated, 0))} left`}
+                    </Text>
+                )}
+            </View>
             <View style={[styles.card, { backgroundColor: theme.card }]}>
-                {CATEGORIES.map((cat, i) => {
-                    const limit = catLimits[cat] ?? 0;
-                    const spent = catSpend[cat] ?? 0;
+                {categories.length === 0 && (
+                    <Text style={[styles.progressLabel, { color: theme.muted }]}>No categories yet.</Text>
+                )}
+                {categories.map((cat, i) => {
+                    const limit = limitFor(cat.id);
+                    const spent = catSpentById[cat.id] ?? 0;
                     const ratio = limit > 0 ? spent / limit : 0;
-
+                    const over = ratio > 1;
+                    // Scale is FIXED (0…monthly) so other sliders never shift. The
+                    // cap is enforced by clamping THIS slider to what's left for it:
+                    // its own share + the still-unallocated remainder.
+                    const persisted = budgetSettings.categoryLimits[cat.id] ?? 0;
+                    const allocatedOthers = allocated - persisted;
+                    // The wall is "what's left for others" PLUS this category's own
+                    // current value, so an over-allocated category isn't forced to 0
+                    // just by touching its slider (it can still be reduced).
+                    const allowedMax = monthly > 0 ? Math.max(0, monthly - allocatedOthers) : 1000;
+                    const wall = Math.max(allowedMax, persisted);
+                    const sliderMax = monthly > 0 ? monthly : 1000;
                     return (
-                        <View key={cat}>
+                        <View key={cat.id}>
                             <View style={styles.sliderHeader}>
-                                <Text style={[styles.sliderLabel, { color: theme.fg }]}>{cat}</Text>
-                                <Text style={[styles.sliderValue, { color: limit > 0 ? (isDark ? '#fff' : '#111') : theme.muted }]}>
+                                <Text style={[styles.sliderLabel, { color: theme.fg }]}>{cat.name}</Text>
+                                <Text style={[styles.sliderValue, { color: limit > 0 ? theme.fg : theme.muted }]}>
                                     {limit > 0 ? formatMoney(limit) : 'No limit'}
                                 </Text>
                             </View>
-
-                            {/* Progress bar for category */}
                             {limit > 0 && (
                                 <>
                                     <View style={styles.progressOuter}>
-                                        <View
-                                            style={[
-                                                styles.progressInner,
-                                                {
-                                                    width: `${Math.min(ratio * 100, 100)}%`,
-                                                    backgroundColor: isDark ? '#f0f0f0' : '#111',
-                                                    opacity: Math.max(0.15, Math.min(ratio, 1)),
-                                                }
-                                            ]}
-                                        />
+                                        <View style={[styles.progressInner, {
+                                            width: `${Math.min(ratio * 100, 100)}%`,
+                                            backgroundColor: over ? '#ff3b30' : (isDark ? '#f0f0f0' : '#111'),
+                                            opacity: over ? 1 : Math.max(0.2, Math.min(ratio, 1)),
+                                        }]} />
                                     </View>
-                                    <Text style={[styles.progressLabel, { color: theme.muted }]}>
-                                        {formatMoney(spent)} of {formatMoney(limit)}
-                                        {ratio > 1 ? '  ⚠ Over limit' : ''}
+                                    <Text style={[styles.progressLabel, { color: over ? '#ff3b30' : theme.muted }]}>
+                                        {formatMoney(spent)} of {formatMoney(limit)}{over ? '  · over' : ''}
                                     </Text>
                                 </>
                             )}
-
                             <Slider
                                 style={styles.slider}
                                 minimumValue={0}
-                                maximumValue={CATEGORY_MAX}
+                                maximumValue={sliderMax}
+                                upperLimit={wall}
                                 step={10}
-                                value={limit}
-                                onValueChange={v => setCatLimits(prev => ({ ...prev, [cat]: v }))}
-                                onSlidingComplete={v => {
-                                    const updated = { ...catLimits, [cat]: v };
-                                    setCatLimits(updated);
-                                    doSave(monthly, updated);
-                                }}
+                                value={Math.min(limit, wall)}
+                                disabled={wall <= 0}
+                                onValueChange={v => setDraft(prev => ({ ...prev, [cat.id]: Math.min(v, wall) }))}
+                                onSlidingComplete={v => saveCatLimit(cat.id, Math.min(v, wall))}
                                 minimumTrackTintColor={isDark ? '#f0f0f0' : '#111'}
                                 maximumTrackTintColor={isDark ? '#2a2a2a' : '#e5e5e5'}
                                 thumbTintColor={isDark ? '#ffffff' : '#111111'}
                             />
-                            {i < CATEGORIES.length - 1 && (
+                            {i < categories.length - 1 && (
                                 <View style={[styles.divider, { backgroundColor: theme.border }]} />
                             )}
                         </View>
@@ -251,6 +298,15 @@ export default function ProfileScreen() {
             >
                 <Text style={[styles.signOutText, { color: theme.muted }]}>Sign Out</Text>
             </TouchableOpacity>
+
+            {/* Delete account (required by app stores for accounts) */}
+            <TouchableOpacity
+                style={styles.deleteAccountBtn}
+                onPress={handleDeleteAccount}
+                activeOpacity={0.7}
+            >
+                <Text style={styles.deleteAccountText}>Delete Account</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 }
@@ -266,6 +322,10 @@ const styles = StyleSheet.create({
     pageSubtitle: { fontSize: 13, lineHeight: 20, marginBottom: 24 },
     section: { fontSize: 10, fontWeight: '700', letterSpacing: 3, marginBottom: 10, marginTop: 20 },
     card: { borderRadius: 16, padding: 16, marginBottom: 8, gap: 4 },
+    heroCard: { borderRadius: 16, padding: 20, marginTop: 4, marginBottom: 8, alignItems: 'center', gap: 4 },
+    heroLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 3 },
+    heroValue: { fontSize: 44, fontWeight: '200', letterSpacing: -1.5 },
+    heroSub: { fontSize: 12 },
     sliderHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
     sliderLabel: { fontSize: 15, fontWeight: '400' },
     sliderValue: { fontSize: 15, fontWeight: '300' },
@@ -276,9 +336,13 @@ const styles = StyleSheet.create({
     sliderRange: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -8 },
     sliderRangeText: { fontSize: 10 },
     divider: { height: StyleSheet.hairlineWidth, marginVertical: 12 },
+    catSectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+    allocLabel: { fontSize: 11, fontWeight: '500', marginBottom: 10 },
     currencyRow: { gap: 8, paddingVertical: 2 },
     currencyChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
     currencyCode: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
     signOutBtn: { marginTop: 32, alignItems: 'center', paddingVertical: 12 },
     signOutText: { fontSize: 13, fontWeight: '400' },
+    deleteAccountBtn: { marginTop: 4, alignItems: 'center', paddingVertical: 12 },
+    deleteAccountText: { fontSize: 13, fontWeight: '400', color: '#ff3b30' },
 });

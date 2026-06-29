@@ -1,9 +1,10 @@
 import 'react-native-url-polyfill/auto';
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { computeHealthScore, HealthScore } from '../utils/healthScore';
-import { loadCheckinData } from '../components/WeeklyCheckin';
+import { loadCheckinData, isCheckinDue } from '../components/WeeklyCheckin';
 import { localDayKey } from '../utils/dates';
 import { formatMoney as fmtMoney, CurrencyCode } from '../utils/format';
+import { canonicalCategory } from '../utils/categories';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 
@@ -35,9 +36,9 @@ export type LearningRule = {
 };
 
 export type BudgetSettings = {
-    dailyLimit: number;
+    dailyLimit: number;                       // derived (monthlyLimit / 30), kept for compat
     monthlyLimit: number;
-    categoryLimits: Record<string, number>;
+    categoryLimits: Record<string, number>;   // keyed by category_id (V2: was by name)
 };
 
 /** Shape accepted when adding expenses (from AI, confirm modal, or manual). */
@@ -57,6 +58,9 @@ type AppContextType = {
     refresh: () => Promise<void>;
     budgetSettings: BudgetSettings;
     saveBudgetSettings: (s: BudgetSettings) => Promise<void>;
+    setMonthlyLimit: (n: number) => Promise<void>;
+    setCategoryLimit: (categoryId: string, amount: number) => Promise<void>;
+    categoryById: Map<string, Category>;
     getDailyTotal: (dateStr: string) => number;
     healthScore: HealthScore;
     weeklyBonus: number;
@@ -102,14 +106,6 @@ function guessIcon(name: string): string {
 
 const normalizeVendor = (v: string) => v.toLowerCase().trim();
 
-// Map the AI's generic fallbacks to the existing global "Miscellaneous" bucket
-// so we don't mint a per-user "Other" category (which would proliferate toward
-// the 50-category cap and fragment analytics).
-const MISC_ALIASES = new Set(['other', 'others', 'otro', 'otros', 'misc', 'varios', 'miscelaneo', 'misceláneo']);
-const canonicalCategory = (name: string): string => {
-    const n = (name ?? '').trim();
-    return MISC_ALIASES.has(n.toLowerCase()) ? 'Miscellaneous' : n;
-};
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -124,6 +120,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const setWeeklyBonus = useCallback((bonus: number) => {
         setWeeklyBonusState(bonus);
     }, []);
+
+    // Single id→Category map every consumer resolves name/icon/limit from, so
+    // budgets/dashboard/heatmap/health-score agree by id instead of by string.
+    const categoryById = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
 
     const fetchCategories = useCallback(async () => {
         const { data, error } = await supabase
@@ -161,13 +161,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (error) { console.error('Error fetching preferences:', error); return; }
         const p = (data?.preferences as Record<string, any>) ?? {};
         setPrefs(p);
+        // currency is written into preferences by the handle_new_user trigger from
+        // the signup metadata, so it's authoritative here.
         if (p.currency) setCurrencyState(p.currency);
+        if (p.budget) {
+            const monthly = Number(p.budget.monthlyLimit) || defaultBudget.monthlyLimit;
+            setBudgetSettings({
+                monthlyLimit: monthly,
+                dailyLimit: monthly / 30,
+                categoryLimits: p.budget.categoryLimits ?? {},
+            });
+        }
     }, []);
 
     const loadAll = useCallback((uid: string) => {
         fetchTransactions();
         fetchCategories();
         fetchLearningRules();
+        // Per-user budget cache for instant paint; fetchPreferences overrides it
+        // with the authoritative server value (it resolves after this local read).
+        AsyncStorage.getItem(`budget_settings:${uid}`).then(raw => {
+            if (raw) setBudgetSettings(JSON.parse(raw));
+        });
         fetchPreferences(uid);
     }, [fetchTransactions, fetchCategories, fetchLearningRules, fetchPreferences]);
 
@@ -192,15 +207,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 setCategories([]);
                 setLearningRules([]);
                 setCurrencyState('USD');
+                setBudgetSettings(defaultBudget); // don't leak A's budget into B's session
+                setPrefs({});
             }
         });
 
-        AsyncStorage.getItem('budget_settings').then(raw => {
-            if (raw) setBudgetSettings(JSON.parse(raw));
-        });
-
         loadCheckinData().then(data => {
-            if (data) setWeeklyBonusState(data.weeklyBonus);
+            // Only apply the bonus if it belongs to the CURRENT week; a stale
+            // bonus from a past week would otherwise skew the score forever.
+            setWeeklyBonusState(data && !isCheckinDue(data) ? data.weeklyBonus : 0);
         });
 
         return () => subscription.unsubscribe();
@@ -208,8 +223,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // ── Category id resolution (auto-creates unknown categories) ───────────────
     const resolveCategoryIds = useCallback(async (names: string[]): Promise<Map<string, string>> => {
+        // Cold-start guard: if the first log fires before fetchCategories resolved,
+        // the closure's `categories` is [] — read fresh so we don't try to INSERT
+        // categories that already exist (which would hit the unique index and
+        // leave the transaction Uncategorized).
+        let known = categories;
+        if (!known.length) {
+            const { data } = await supabase.from('categories').select('id, name, icon, user_id');
+            if (data) { known = data; setCategories(data); }
+        }
+
         const map = new Map<string, string>();
-        categories.forEach(c => map.set(c.name.toLowerCase(), c.id));
+        known.forEach(c => map.set(c.name.toLowerCase(), c.id));
 
         const toCreate = [...new Set(
             names
@@ -223,15 +248,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 .insert({ user_id: userId, name, icon: guessIcon(name) })
                 .select('id, name')
                 .single();
-            if (error) { console.error('Failed to create category:', error.message); continue; }
-            if (data) map.set(data.name.toLowerCase(), data.id);
+            if (data) { map.set(data.name.toLowerCase(), data.id); continue; }
+            // Insert failed (likely a concurrent create hit the unique index) —
+            // recover the existing row's id instead of leaving it unmapped.
+            console.error('Failed to create category:', error?.message);
+            const { data: existing } = await supabase
+                .from('categories')
+                .select('id, name')
+                .eq('user_id', userId)
+                .ilike('name', name)
+                .maybeSingle();
+            if (existing) map.set(existing.name.toLowerCase(), existing.id);
         }
         if (toCreate.length) await fetchCategories();
         return map;
     }, [categories, userId, fetchCategories]);
 
-    const addTransactions = useCallback(async (txs: ExpenseInput[], opts?: { transcript?: string }) => {
+    const addTransactions = useCallback(async (input: ExpenseInput[], opts?: { transcript?: string }) => {
         if (!userId) { console.error('Must be authenticated to save transactions'); return; }
+        // Drop invalid amounts up front so one bad row can't make the DB's
+        // amount>0 check reject the whole batch.
+        const txs = input.filter(tx => Number.isFinite(tx.amount) && tx.amount > 0);
         if (!txs.length) return;
 
         const catMap = await resolveCategoryIds(txs.map(tx => tx.inferred_category ?? 'Other'));
@@ -285,7 +322,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (error) { console.error('Failed to delete category:', error); return; }
         await fetchCategories();
         await fetchTransactions();
-    }, [fetchCategories, fetchTransactions]);
+        fetchLearningRules(); // DB cascades the rule delete; refresh in-memory copy
+    }, [fetchCategories, fetchTransactions, fetchLearningRules]);
 
     const updateTransaction = useCallback(async (
         id: string,
@@ -305,7 +343,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         const { error } = await supabase.from('transactions').update(payload).eq('id', id);
-        if (error) { console.error('Failed to update transaction:', error); return; }
+        if (error) { console.error('Failed to update transaction:', error); await fetchTransactions(); return; }
+
+        // Optimistic single-row patch (no full refetch → no flicker, consistent
+        // with the optimistic add/delete paths).
+        setTransactions(prev => prev.map(t => {
+            if (t.id !== id) return t;
+            const catName = newCatId !== undefined
+                ? (categoryById.get(newCatId)?.name ?? canonicalCategory(updates.inferred_category ?? t.inferred_category))
+                : t.inferred_category;
+            return {
+                ...t,
+                amount: updates.amount ?? t.amount,
+                vendor_name: updates.vendor_name ?? t.vendor_name,
+                category_id: newCatId !== undefined ? (newCatId ?? null) : t.category_id,
+                inferred_category: catName,
+            };
+        }));
 
         // Habit learning: remember vendor → category corrections, but only when
         // the category actually CHANGED (don't re-teach on an amount-only edit).
@@ -318,9 +372,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             );
             fetchLearningRules();
         }
-
-        await fetchTransactions();
-    }, [transactions, userId, resolveCategoryIds, fetchLearningRules, fetchTransactions]);
+    }, [transactions, userId, categoryById, resolveCategoryIds, fetchLearningRules, fetchTransactions]);
 
     const deleteTransaction = useCallback(async (id: string) => {
         setTransactions(prev => prev.filter(t => t.id !== id)); // optimistic
@@ -356,10 +408,58 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const formatMoney = useCallback((n: number) => fmtMoney(n, currency), [currency]);
 
+    // Budget is persisted to BOTH AsyncStorage (offline cache, instant load) and
+    // users.preferences.budget (authoritative, synced across devices).
     const saveBudgetSettings = useCallback(async (s: BudgetSettings) => {
         setBudgetSettings(s);
-        await AsyncStorage.setItem('budget_settings', JSON.stringify(s));
-    }, []);
+        if (!userId) return;
+        AsyncStorage.setItem(`budget_settings:${userId}`, JSON.stringify(s));
+        const merged = { ...prefs, budget: { monthlyLimit: s.monthlyLimit, categoryLimits: s.categoryLimits } };
+        setPrefs(merged);
+        const { error } = await supabase.from('users').update({ preferences: merged }).eq('id', userId);
+        if (error) console.error('Failed to save budget:', error);
+    }, [userId, prefs]);
+
+    const setMonthlyLimit = useCallback(async (n: number) => {
+        const limits = budgetSettings.categoryLimits;
+        const allocated = Object.values(limits).reduce((s, v) => s + v, 0);
+        let categoryLimits = limits;
+        // If the new cap is below what's already split across categories, rescale
+        // them proportionally so they still fit (instead of leaving every slider
+        // stuck at "0 available").
+        if (n > 0 && allocated > n) {
+            const factor = n / allocated;
+            categoryLimits = Object.fromEntries(
+                Object.entries(limits).map(([id, v]) => [id, Math.floor((v * factor) / 10) * 10])
+            );
+        }
+        await saveBudgetSettings({ ...budgetSettings, monthlyLimit: n, dailyLimit: n / 30, categoryLimits });
+    }, [budgetSettings, saveBudgetSettings]);
+
+    const setCategoryLimit = useCallback(async (categoryId: string, amount: number) => {
+        const next = { ...budgetSettings.categoryLimits };
+        if (amount > 0) next[categoryId] = amount; else delete next[categoryId];
+        await saveBudgetSettings({ ...budgetSettings, categoryLimits: next });
+    }, [budgetSettings, saveBudgetSettings]);
+
+    // One-time self-heal: convert any legacy NAME-keyed category limits to
+    // category_id keys, and drop limits for categories that no longer exist.
+    useEffect(() => {
+        if (!categories.length) return;
+        const limits = budgetSettings.categoryLimits;
+        const keys = Object.keys(limits);
+        if (!keys.length) return;
+        const nameToId = new Map(categories.map(c => [c.name.toLowerCase(), c.id]));
+        const migrated: Record<string, number> = {};
+        let changed = false;
+        for (const k of keys) {
+            if (categoryById.has(k)) { migrated[k] = limits[k]; continue; }   // already an id
+            const id = nameToId.get(k.toLowerCase());
+            if (id) migrated[id] = limits[k];                                  // name → id
+            changed = true;                                                    // migrated or dropped orphan
+        }
+        if (changed) saveBudgetSettings({ ...budgetSettings, categoryLimits: migrated });
+    }, [categories, categoryById, budgetSettings, saveBudgetSettings]);
 
     const getDailyTotal = useCallback((dateStr: string) => {
         return transactions
@@ -379,7 +479,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return (
         <AppContext.Provider value={{
             transactions, addTransactions, updateTransaction, deleteTransaction, refresh,
-            budgetSettings, saveBudgetSettings, getDailyTotal,
+            budgetSettings, saveBudgetSettings, setMonthlyLimit, setCategoryLimit,
+            categoryById, getDailyTotal,
             healthScore, weeklyBonus, setWeeklyBonus,
             userId, signOut,
             categories, createCategory, updateCategory, deleteCategory,
@@ -391,19 +492,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-// Maps a DB row to a Transaction, deriving the category name from the FK join
-// while staying backward-compatible with legacy rows (category name was stored
-// in raw_transcript and category_id is NULL).
+// Maps a DB row to a Transaction. category name comes from the FK join;
+// raw_transcript is always the spoken/typed text (V2). A transaction whose
+// category was deleted (category_id → null) shows as "Uncategorized", never the
+// transcript text.
 function rowToTransaction(row: any): Transaction {
     const catName: string | null = row.category?.name ?? null;
-    const hasCategoryId = !!row.category_id;
     return {
         id: row.id,
         amount: Number(row.amount),
         vendor_name: row.vendor_name,
         category_id: row.category_id ?? null,
-        inferred_category: catName ?? (hasCategoryId ? 'Uncategorized' : (row.raw_transcript || 'Uncategorized')),
-        transcript: hasCategoryId ? (row.raw_transcript ?? null) : null,
+        inferred_category: catName ?? 'Uncategorized',
+        transcript: row.raw_transcript ?? null,
         needs_review: !!row.needs_review,
         timestamp: row.timestamp,
     };

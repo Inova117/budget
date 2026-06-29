@@ -1,18 +1,3 @@
--- Default global categories (user_id null → visible to everyone).
--- icon values MUST match lucide-react-native names in the app's ICON_MAP
--- (CategoriesScreen / DashboardScreen), otherwise they render as a fallback box.
-insert into public.categories (name, icon)
-values
-  ('Groceries',      'ShoppingCart'),
-  ('Dining',         'Utensils'),
-  ('Transportation', 'Car'),
-  ('Housing',        'Home'),
-  ('Utilities',      'Lightbulb'),
-  ('Entertainment',  'Film'),
-  ('Healthcare',     'Heart'),
-  ('Personal Care',  'Droplet'),
-  ('Shopping',       'ShoppingBag'),
-  ('Subscriptions',  'Music'),
-  ('Travel',         'Plane'),
-  ('Miscellaneous',  'Package')
-on conflict do nothing;
+-- No global/shared categories in V2: each user gets their OWN editable copy of
+-- the default categories via the public.handle_new_user() trigger on signup
+-- (see 20240101000000_initial_schema.sql). This file is intentionally empty.

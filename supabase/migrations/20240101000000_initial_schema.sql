@@ -76,15 +76,17 @@ create policy "Users can view own preferences" on public.users
 create policy "Users can update own preferences" on public.users
   for update using (auth.uid() = id);
 
--- categories: see global or own; modify own or global.
+-- categories: everyone SEES global + own; users may only MODIFY their own.
+-- (Global/default categories are shared, so they must be immutable to users —
+-- otherwise one user renaming/deleting a global mutates it for everyone.)
 create policy "Users can view global or own categories" on public.categories
   for select using (user_id is null or auth.uid() = user_id);
 create policy "Users can insert own categories" on public.categories
   for insert with check (auth.uid() = user_id);
-create policy "Users can update own or global categories" on public.categories
-  for update using (user_id is null or auth.uid() = user_id);
-create policy "Users can delete own or global categories" on public.categories
-  for delete using (user_id is null or auth.uid() = user_id);
+create policy "Users can update own categories" on public.categories
+  for update using (auth.uid() = user_id);
+create policy "Users can delete own categories" on public.categories
+  for delete using (auth.uid() = user_id);
 
 -- transactions: only your own.
 create policy "Users can view own transactions" on public.transactions
@@ -106,14 +108,36 @@ create policy "Users can update own learning rules" on public.learning_rules
 create policy "Users can delete own learning rules" on public.learning_rules
   for delete using (auth.uid() = user_id);
 
--- ── Auto-provision public.users on signup ───────────────────────────────────
+-- ── Auto-provision public.users + per-user default categories on signup ──────
+-- Each user gets their OWN editable copy of the defaults (so they can rename /
+-- delete / re-icon them freely). No shared global categories.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.users (id) values (new.id) on conflict (id) do nothing;
+  -- Adopt the currency the user picked at signup (stored in auth metadata).
+  insert into public.users (id, preferences)
+  values (
+    new.id,
+    jsonb_build_object('currency', coalesce(new.raw_user_meta_data->>'currency', 'USD'), 'timezone', 'UTC')
+  )
+  on conflict (id) do nothing;
+  insert into public.categories (user_id, name, icon) values
+    (new.id, 'Groceries', 'ShoppingCart'),
+    (new.id, 'Dining', 'Utensils'),
+    (new.id, 'Transportation', 'Car'),
+    (new.id, 'Housing', 'Home'),
+    (new.id, 'Utilities', 'Lightbulb'),
+    (new.id, 'Entertainment', 'Film'),
+    (new.id, 'Healthcare', 'Heart'),
+    (new.id, 'Personal Care', 'Droplet'),
+    (new.id, 'Shopping', 'ShoppingBag'),
+    (new.id, 'Subscriptions', 'Music'),
+    (new.id, 'Travel', 'Plane'),
+    (new.id, 'Miscellaneous', 'Package')
+  on conflict do nothing;
   return new;
 end;
 $$;

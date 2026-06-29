@@ -65,6 +65,28 @@ management, personal finance, AI expense tracking
 - [ ] Upload feature graphic + screenshots
 - [ ] Internal testing → review on real devices → submit
 
+## Data Safety form (Play Console)
+Declare these honestly — Google scrutinizes finance apps.
+
+**Data collected & linked to the user:**
+- Email address (account / auth) — for app functionality. Required.
+- Financial info: transaction amounts, vendors, categories — app functionality. Required.
+- Audio (voice memos) — processed to extract an expense, **not** stored. Optional (voice feature).
+- Photos (receipts) — processed to extract an expense, **not** stored. Optional (scan feature).
+
+**Practices:**
+- Encrypted in transit (HTTPS/TLS). Yes.
+- Users can request deletion: **Yes — in-app** (Profile → Delete Account) and by email.
+- Shared with third parties: processors only — **Supabase** (storage/auth) and
+  **Google Gemini** (parsing voice/text/receipts). Not sold; not used for ads.
+
+## Account deletion (required)
+Google requires apps with sign-in to let users delete their account + data.
+Centurio does this **in-app**: Profile → **Delete Account** → calls the
+`delete-account` edge function, which removes the user's row (cascading all their
+categories, transactions and learning rules) and the auth user. Mention this in
+the listing and add a deletion-request URL/email for the web requirement.
+
 ## Notes
 - The Gemini key is **not** embedded in the app (it's a server-side Supabase
   secret) — see `docs/SECURITY.md`. Earlier listing notes claiming otherwise are

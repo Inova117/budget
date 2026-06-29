@@ -44,8 +44,10 @@ App.tsx ──auth gate──> AuthScreen | AppProvider → TabNavigator
   AI categories from learned vendor→category corrections before the confirm modal.
 - `src/utils/dates.ts` — timezone-consistent day/week/month boundaries.
 - `src/utils/format.ts` — `formatMoney(amount, currency)` (Intl with a manual fallback).
-- `supabase/functions/_shared/parse.ts` — JWT validation (`requireUser`), Gemini call,
-  tolerant JSON parsing, expense normalization. Shared by all three functions.
+- `supabase/functions/{process-text,process-audio,process-image}/index.ts` — each is
+  **self-contained** (JWT validation via `requireUser`, Gemini call, tolerant JSON
+  parsing, expense normalization are inlined, no cross-file imports) so they deploy
+  cleanly via CLI *or* by pasting into the Supabase dashboard.
 
 ### Data model (Postgres)
 `users(preferences)` · `categories(user_id null=global)` ·

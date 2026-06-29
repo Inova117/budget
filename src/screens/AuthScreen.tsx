@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
 import {
-    View, Text, TextInput, TouchableOpacity, StyleSheet,
-    useColorScheme, Alert, ActivityIndicator, KeyboardAvoidingView, Platform
+    View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView,
+    useColorScheme, ActivityIndicator, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { CURRENCIES } from '../utils/format';
 
 interface Props {
     onAuthSuccess: () => void;
+}
+
+/** Turns raw Supabase auth errors into a clear, human message. */
+function friendlyAuthError(err: any): string {
+    const m = (err?.message || '').toLowerCase();
+    if (m.includes('invalid login credentials')) return 'Incorrect email or password.';
+    if (m.includes('email not confirmed')) return 'Confirm your email first — check your inbox.';
+    if (m.includes('already registered') || m.includes('already been registered')) return 'That email is already registered. Try signing in instead.';
+    if (m.includes('should be at least') || m.includes('password')) return err?.message || 'Password is too weak.';
+    if (m.includes('unable to validate email') || m.includes('invalid email')) return 'That email address looks invalid.';
+    if (m.includes('rate limit') || m.includes('too many')) return 'Too many attempts. Wait a moment and try again.';
+    if (m.includes('failed to fetch') || m.includes('network')) return 'Network error — check your connection and the Supabase URL in .env.';
+    return err?.message || 'Something went wrong. Please try again.';
 }
 
 export default function AuthScreen({ onAuthSuccess }: Props) {
@@ -16,30 +30,37 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
     const [mode, setMode] = useState<'login' | 'register'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [signupCurrency, setSignupCurrency] = useState('USD');
     const [loading, setLoading] = useState(false);
+    // Inline feedback (Alert.alert is a no-op on web, so errors must render in the UI).
+    const [error, setError] = useState<string | null>(null);
+    const [info, setInfo] = useState<string | null>(null);
 
     const handleSubmit = async () => {
+        setError(null);
+        setInfo(null);
         if (!email.trim() || !password.trim()) {
-            Alert.alert('Required', 'Please enter your email and password.');
+            setError('Please enter your email and password.');
             return;
         }
         setLoading(true);
         try {
             if (mode === 'register') {
-                const { error } = await supabase.auth.signUp({ email, password });
+                // Currency chosen at signup is stored in user metadata; the app
+                // applies it to the user's preferences on first load.
+                const { error } = await supabase.auth.signUp({
+                    email, password, options: { data: { currency: signupCurrency } },
+                });
                 if (error) throw error;
-                Alert.alert(
-                    'Account Created',
-                    'Check your email to confirm your account, then sign in.',
-                    [{ text: 'OK', onPress: () => setMode('login') }]
-                );
+                setInfo('Account created — check your email to confirm, then sign in.');
+                setMode('login');
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
                 onAuthSuccess();
             }
         } catch (err: any) {
-            Alert.alert('Auth Error', err.message);
+            setError(friendlyAuthError(err));
         } finally {
             setLoading(false);
         }
@@ -64,10 +85,11 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
                         placeholder="Email"
                         placeholderTextColor={theme.muted}
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={(t) => { setEmail(t); if (error) setError(null); }}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoCorrect={false}
+                        onSubmitEditing={handleSubmit}
                     />
                 </View>
 
@@ -77,11 +99,56 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
                         placeholder="Password"
                         placeholderTextColor={theme.muted}
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={(t) => { setPassword(t); if (error) setError(null); }}
                         secureTextEntry
                         autoCapitalize="none"
+                        onSubmitEditing={handleSubmit}
+                        returnKeyType="go"
                     />
                 </View>
+
+                {/* Currency picker (registration only) */}
+                {mode === 'register' && (
+                    <View>
+                        <Text style={[styles.currencyLabel, { color: theme.muted }]}>CURRENCY</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyRow}>
+                            {CURRENCIES.map(c => {
+                                const active = c.code === signupCurrency;
+                                return (
+                                    <TouchableOpacity
+                                        key={c.code}
+                                        onPress={() => setSignupCurrency(c.code)}
+                                        activeOpacity={0.8}
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: active }}
+                                        accessibilityLabel={`${c.label} (${c.code})`}
+                                        style={[
+                                            styles.currencyChip,
+                                            { borderColor: active ? theme.fg : theme.border },
+                                            active && { backgroundColor: isDark ? '#1f1f1f' : '#f0f0f0' },
+                                        ]}
+                                    >
+                                        <Text style={[styles.currencyCode, { color: active ? theme.fg : theme.muted }]}>
+                                            {c.symbol} {c.code}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+                )}
+
+                {/* Inline feedback — visible on web AND native */}
+                {error && (
+                    <View style={styles.banner} accessibilityLiveRegion="polite">
+                        <Text style={styles.bannerError}>{error}</Text>
+                    </View>
+                )}
+                {info && (
+                    <View style={[styles.banner, styles.bannerInfoWrap]} accessibilityLiveRegion="polite">
+                        <Text style={styles.bannerInfo}>{info}</Text>
+                    </View>
+                )}
 
                 {/* Submit */}
                 <TouchableOpacity
@@ -99,7 +166,7 @@ export default function AuthScreen({ onAuthSuccess }: Props) {
                 </TouchableOpacity>
 
                 {/* Toggle */}
-                <TouchableOpacity onPress={() => setMode(mode === 'login' ? 'register' : 'login')}>
+                <TouchableOpacity onPress={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); setInfo(null); }}>
                     <Text style={[styles.toggle, { color: theme.muted }]}>
                         {mode === 'login'
                             ? "Don't have an account? Create one"
@@ -138,4 +205,18 @@ const styles = StyleSheet.create({
     },
     btnText: { fontSize: 16, fontWeight: '600' },
     toggle: { textAlign: 'center', fontSize: 13, marginTop: 8 },
+    banner: {
+        backgroundColor: 'rgba(255,59,48,0.10)',
+        borderRadius: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginTop: -4,
+    },
+    bannerInfoWrap: { backgroundColor: 'rgba(48,161,78,0.10)' },
+    bannerError: { color: '#ff3b30', fontSize: 14, fontWeight: '500', textAlign: 'center' },
+    bannerInfo: { color: '#30a14e', fontSize: 14, fontWeight: '500', textAlign: 'center' },
+    currencyLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 2, marginBottom: 8, marginLeft: 2 },
+    currencyRow: { gap: 8, paddingVertical: 2 },
+    currencyChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
+    currencyCode: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3 },
 });

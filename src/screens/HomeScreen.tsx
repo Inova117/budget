@@ -1,12 +1,14 @@
 import React from 'react';
 import {
-    View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert,
+    View, Text, ScrollView, StyleSheet, TouchableOpacity,
     useColorScheme, Animated, Modal, Pressable, TextInput, Vibration, Platform,
     RefreshControl,
 } from 'react-native';
+import { useConfirm, useToast } from '../components/FeedbackProvider';
 import { useState, useEffect, useRef } from 'react';
 import { Audio } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
 import { StatusBar } from 'expo-status-bar';
 import { useApp } from '../context/AppContext';
@@ -14,6 +16,7 @@ import { localDayKey } from '../utils/dates';
 import SpendingHeatmap from '../components/SpendingHeatmap';
 import HealthScoreBadge from '../components/HealthScoreBadge';
 import ExpenseConfirmModal, { PendingExpense } from '../components/ExpenseConfirmModal';
+import { canonicalCategory } from '../utils/categories';
 import { supabase } from '../lib/supabase';
 
 // Subtle haptic feedback (Android only — avoids the heavy default iOS buzz).
@@ -26,7 +29,8 @@ function normalizeExpenses(raw: any[]): PendingExpense[] {
         amount: Number(e.amount) || 0,
         vendor: e.vendor || e.vendor_name || 'Unknown',
         vendor_name: e.vendor || e.vendor_name || 'Unknown',
-        inferred_category: e.inferred_category || 'Other',
+        // Show the SAME label that will be saved (e.g. "Other" → "Miscellaneous").
+        inferred_category: canonicalCategory(e.inferred_category || 'Miscellaneous'),
         confidence: typeof e.confidence === 'number' ? e.confidence : undefined,
     }));
 }
@@ -80,7 +84,7 @@ function localParseFallback(text: string): PendingExpense[] {
     const amount = match ? parseFloat(match[1].replace(',', '.')) : 0;
     const vendor = text.replace(/[$\d.,]+/g, '').trim() || 'Manual entry';
     if (!amount) return [];
-    return [{ amount, vendor, vendor_name: vendor, inferred_category: 'Other', confidence: 0.4 }];
+    return [{ amount, vendor, vendor_name: vendor, inferred_category: 'Miscellaneous', confidence: 0.4 }];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────
@@ -90,6 +94,8 @@ export default function HomeScreen() {
         addTransactions, transactions, updateTransaction, deleteTransaction,
         categories, healthScore, applyLearningRules, formatMoney, refresh,
     } = useApp();
+    const confirm = useConfirm();
+    const toast = useToast();
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
     const theme = isDark ? dark : light;
@@ -121,6 +127,13 @@ export default function HomeScreen() {
 
     // Track recording start time for minimum duration enforcement
     const recordingStartTime = useRef<number>(0);
+    // Recording lifecycle refs: the actual Recording object (in-flight or active),
+    // whether createAsync is still pending, and whether a stop was requested while
+    // still preparing. These fix (a) a <1.5s release leaving the mic hot and
+    // (b) a quick tap orphaning a recording that's still being created.
+    const recordingRef = useRef<Audio.Recording | null>(null);
+    const preparingRef = useRef(false);
+    const stopRequestedRef = useRef(false);
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const ripple1 = useRef(new Animated.Value(0)).current;
@@ -163,31 +176,54 @@ export default function HomeScreen() {
         return () => { scaleAnim?.stop(); rippleAnim?.stop(); };
     }, [recording]);
 
+    // Stops + unloads the active recording and releases the mic. Safe to call twice.
+    const cleanupRecording = async () => {
+        const rec = recordingRef.current;
+        recordingRef.current = null;
+        setRecording(null);
+        if (rec) { try { await rec.stopAndUnloadAsync(); } catch { /* already stopped */ } }
+        try { await Audio.setAudioModeAsync({ allowsRecordingIOS: false }); } catch { /* ignore */ }
+    };
+
     const startRecording = async () => {
+        if (Platform.OS === 'web') { toast.info('🎙️ Voice logging works in the mobile app'); return; }
+        if (preparingRef.current || recordingRef.current) return; // guard double-start
+        preparingRef.current = true;
+        stopRequestedRef.current = false;
         try {
             await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
             const { recording: rec } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+            preparingRef.current = false;
+            recordingRef.current = rec;
+            // If the user already released while we were still preparing, stop now.
+            if (stopRequestedRef.current) { await cleanupRecording(); return; }
             setRecording(rec);
             recordingStartTime.current = Date.now();
             buzz(12);
             setStatusText('Listening...');
         } catch (err: any) {
-            Alert.alert("Mic Error", err.message);
+            preparingRef.current = false;
+            await cleanupRecording();
+            toast.error(err.message || 'Microphone error');
         }
     };
 
     const stopRecording = async () => {
-        if (!recording) return;
+        // Released before createAsync finished — let startRecording clean up.
+        if (preparingRef.current) { stopRequestedRef.current = true; return; }
+        const rec = recordingRef.current;
+        if (!rec) return;
 
-        // Enforce minimum 1.5s recording
+        // Enforce minimum 1.5s recording — but still stop the mic (else it stays hot).
         const elapsed = Date.now() - recordingStartTime.current;
         if (elapsed < 1500) {
+            await cleanupRecording();
             setStatusText('Hold longer to speak');
             setTimeout(() => setStatusText('Hold to speak'), 2200);
             return;
         }
 
-        const rec = recording;
+        recordingRef.current = null;
         setRecording(null);
         setIsProcessing(true);
         setStatusText('Processing with AI...');
@@ -208,7 +244,7 @@ export default function HomeScreen() {
         } catch (e: any) {
             setStatusText('Error — try again');
             setTimeout(() => setStatusText('Hold to speak'), 3000);
-            Alert.alert("Error", e.message);
+            toast.error(e.message || 'Something went wrong');
         } finally {
             setIsProcessing(false);
         }
@@ -223,13 +259,13 @@ export default function HomeScreen() {
         if (source === 'camera') {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert("Permission needed", "Camera permission is required to take a photo.");
+                toast.error('Camera permission is required to take a photo.');
                 return;
             }
         } else {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                Alert.alert("Permission needed", "Photo library permission is required.");
+                toast.error('Photo library permission is required.');
                 return;
             }
         }
@@ -251,7 +287,17 @@ export default function HomeScreen() {
 
         if (result.canceled || !result.assets?.[0]?.uri) return;
 
-        const imageUri = result.assets[0].uri;
+        const asset = result.assets[0];
+        let imageUri = asset.uri;
+        // Downscale big photos so the base64 body stays under the edge-function
+        // request limit (a 12MP photo ~33% inflated would blow past it).
+        if (asset.width && asset.width > 1400) {
+            try {
+                const ref = await ImageManipulator.manipulate(imageUri).resize({ width: 1280 }).renderAsync();
+                const out = await ref.saveAsync({ compress: 0.7, format: SaveFormat.JPEG });
+                imageUri = out.uri;
+            } catch { /* fall back to the original image */ }
+        }
         setIsProcessing(true);
         setStatusText('Scanning receipt...');
 
@@ -269,19 +315,20 @@ export default function HomeScreen() {
                 setStatusText('Hold to speak');
             } else {
                 setStatusText('No items found');
-                Alert.alert("No Items Found", "Make sure the receipt is clearly visible and well-lit.");
+                toast.show('No items found — make sure the receipt is clear and well-lit.', 'info');
                 setTimeout(() => setStatusText('Hold to speak'), 3500);
             }
         } catch (e: any) {
             setStatusText('Scan failed');
             setTimeout(() => setStatusText('Hold to speak'), 3000);
-            Alert.alert("Scan Error", e.message);
+            toast.error(e.message || 'Scan failed');
         } finally {
             setIsProcessing(false);
         }
     };
 
     const onCameraPress = () => {
+        if (Platform.OS === 'web') { toast.info('📸 Receipt scan works in the mobile app'); return; }
         Animated.sequence([
             Animated.timing(camScale, { toValue: 0.88, duration: 90, useNativeDriver: true }),
             Animated.timing(camScale, { toValue: 1, duration: 90, useNativeDriver: true }),
@@ -524,18 +571,16 @@ export default function HomeScreen() {
                         <View style={styles.editActions}>
                             <TouchableOpacity
                                 style={[styles.deleteBtn, { backgroundColor: '#ff3b30' }]}
-                                onPress={() => {
-                                    Alert.alert('Delete Transaction', 'Are you sure?', [
-                                        { text: 'Cancel', style: 'cancel' },
-                                        {
-                                            text: 'Delete',
-                                            style: 'destructive',
-                                            onPress: async () => {
-                                                await deleteTransaction(editingTx.id);
-                                                setEditingTx(null);
-                                            }
-                                        }
-                                    ]);
+                                onPress={async () => {
+                                    const ok = await confirm({
+                                        title: 'Delete transaction?',
+                                        message: `${editingTx?.vendor_name} · ${formatMoney(editingTx?.amount ?? 0)}`,
+                                        confirmLabel: 'Delete',
+                                        destructive: true,
+                                    });
+                                    if (!ok) return;
+                                    await deleteTransaction(editingTx.id);
+                                    setEditingTx(null);
                                 }}
                             >
                                 <Text style={styles.deleteBtnText}>Delete</Text>
@@ -545,7 +590,7 @@ export default function HomeScreen() {
                                 onPress={async () => {
                                     const amount = parseFloat(editAmount);
                                     if (isNaN(amount) || amount <= 0) {
-                                        Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+                                        toast.error('Please enter a valid amount.');
                                         return;
                                     }
                                     await updateTransaction(editingTx.id, {
@@ -703,7 +748,7 @@ export default function HomeScreen() {
                                             setPendingTranscript(text);
                                             setShowConfirm(true);
                                         } else {
-                                            Alert.alert('Could not parse', e.message || 'Try including an amount, e.g. "$30 super".');
+                                            toast.error(e.message || 'Could not parse. Try including an amount, e.g. "$30 super".');
                                         }
                                     } finally {
                                         setIsProcessing(false);
@@ -814,8 +859,6 @@ const styles = StyleSheet.create({
     },
     hint: { fontSize: 10, fontWeight: '500', letterSpacing: 0.3 },
     innerDot: { width: 14, height: 14, borderRadius: 7, opacity: 0.9 },
-    typeInstead: { marginTop: -4, paddingVertical: 4 },
-    typeInsteadText: { fontSize: 10, fontWeight: '400', letterSpacing: 0.2, textDecorationLine: 'underline' },
     keyLine: { height: 2, borderRadius: 1 },
 
     // Modal

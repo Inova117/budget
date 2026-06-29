@@ -205,7 +205,7 @@ export default function DashboardScreen() {
 
                                     {expandedCategory === cat && (
                                         <View style={{ marginBottom: 20 }}>
-                                            <SpendingHeatmap categoryFilter={cat} />
+                                            <SpendingHeatmap categoryId={categories.find(c => c.name === cat)?.id ?? null} />
                                         </View>
                                     )}
                                 </View>
@@ -291,7 +291,6 @@ const styles = StyleSheet.create({
     catRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
     catMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, width: 110 },
     catIconContainer: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
-    catDot: { width: 8, height: 8, borderRadius: 4 },
     catName: { fontSize: 13, fontWeight: '400' },
     barContainer: { flex: 1, height: 6, backgroundColor: '#e5e5e510', borderRadius: 3, overflow: 'hidden' },
     bar: { height: '100%', borderRadius: 3 },
