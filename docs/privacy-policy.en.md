@@ -3,7 +3,7 @@
 > **The authoritative, always-current Privacy Policy is the web page**
 > (use this URL in Google Play Console and in-app):
 >
-> **https://centurio.app/legal/privacy.html** (bilingual ES/EN toggle)
+> **https://zerionbudget.netlify.app/legal/privacy.html** (bilingual ES/EN toggle)
 >
 > Source file: [`web/legal/privacy.html`](../web/legal/privacy.html). Edit that file, not this one.
 > _(Replace the domain with your real deployed domain before launch.)_
@@ -34,7 +34,7 @@ Audio/images are sent to these providers only to create the entry. **We do not u
 
 ## Your data, your control
 - In-app: **Profile → Delete account** permanently deletes your account and all data.
-- Web deletion request / details: https://centurio.app/legal/eliminar-cuenta.html
+- Web deletion request / details: https://zerionbudget.netlify.app/legal/eliminar-cuenta.html
 - Rights, retention, international transfer (US), security, children (18+), breach
   notification (LOPDP: 5 days to the authority / 3 days to users) and the
   California (CCPA/CPRA) notice are covered in full in the web Privacy Policy.
