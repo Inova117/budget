@@ -8,9 +8,10 @@ GitHub Pages, Netlify, Vercel o Cloudflare Pages.
 
 ```
 web/
-├── index.html              ← Landing (metodología Ryan Deiss, usuario como héroe)
-├── styles.css              ← Design system "Breathe" (claro/oscuro, iconos Lucide)
-├── app.js                  ← Toggle de idioma ES/EN, FAQ, año, scroll
+├── index.html              ← Landing (tema oscuro "Obsidian": hero + teléfonos + animaciones)
+├── landing.css             ← Estilos de la landing (oscuro, glow, marcos de teléfono = pantallas exactas de la app)
+├── styles.css              ← Design system de las páginas LEGALES (claro, iconos Lucide)
+├── app.js                  ← Toggle ES/EN, FAQ, año, scroll, animaciones reveal (IntersectionObserver)
 └── legal/
     ├── privacy.html         ← Política de Privacidad (LOPDP Ecuador + RGPD + CCPA)
     ├── terms.html           ← Términos del Servicio / EULA (ley de Ecuador)

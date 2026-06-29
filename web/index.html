@@ -4,49 +4,55 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Centurio — Registra tus gastos solo con hablar · AI budget tracker</title>
-<meta name="description" content="Centurio es un control de gastos de registro invisible: habla, escribe o escanea un recibo y la IA lo entiende. Un panel minimalista 'Respira' te muestra cómo vas. Gratis, sin anuncios, privado." />
-<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
-<meta property="og:title" content="Centurio — Tu dinero, bajo control. Solo con hablar." />
-<meta property="og:description" content="Habla, escribe o escanea un recibo. La IA registra el gasto. Tu panel 'Respira' te muestra cómo vas, de un vistazo." />
+<meta name="description" content="Centurio: control de gastos de registro invisible. Habla, escribe o escanea un recibo y la IA lo entiende. Panel minimalista 'Respira'. Gratis, sin anuncios, privado." />
+<meta name="theme-color" content="#0a0b0d" />
+<meta property="og:title" content="Centurio — Toma el control de tu dinero. Solo con hablar." />
+<meta property="og:description" content="Habla, escribe o escanea un recibo. La IA registra el gasto. Tu panel 'Respira' te muestra cómo vas." />
 <meta property="og:type" content="website" />
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="landing.css" />
 <!-- Zero third-party requests · zero trackers · zero cookies -->
 </head>
 <body>
 <a href="#main" class="skip-link"><span class="lang-es">Saltar al contenido</span><span class="lang-en">Skip to content</span></a>
 
 <!-- ===================== ICON SPRITE (Lucide, MIT) ===================== -->
-<svg class="spr" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs>
+<svg class="spr" aria-hidden="true" focusable="false"><defs>
+<symbol id="logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></symbol>
+<symbol id="arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
 <symbol id="mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></symbol>
-<symbol id="camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
 <symbol id="keyboard" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></symbol>
-<symbol id="utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></symbol>
-<symbol id="cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
-<symbol id="car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></symbol>
-<symbol id="sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></symbol>
-<symbol id="activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
-<symbol id="wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
-<symbol id="shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/><path d="m9 12 2 2 4-4"/></symbol>
-<symbol id="lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+<symbol id="layout" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+<symbol id="tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+<symbol id="settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></symbol>
 <symbol id="trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
 <symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
 <symbol id="chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
-<symbol id="arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
-<symbol id="arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></symbol>
+<symbol id="sparkles" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></symbol>
 <symbol id="leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/><path d="m9 12 2 2 4-4"/></symbol>
 <symbol id="eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></symbol>
-<symbol id="server" viewBox="0 0 24 24"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></symbol>
-<symbol id="zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
-<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
-<symbol id="repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
-<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
 <symbol id="ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol>
+<symbol id="wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+<symbol id="repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 <symbol id="mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
-<symbol id="file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
-<symbol id="play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
-<symbol id="moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
-<symbol id="logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+<symbol id="activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+<symbol id="utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></symbol>
+<symbol id="bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></symbol>
+<symbol id="heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+<symbol id="bag" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
 </defs></svg>
 
 <!-- ============================ NAV ============================ -->
@@ -55,8 +61,8 @@
     <a href="#top" class="brand"><svg class="i logo" width="26" height="26"><use href="#logo"/></svg> Centurio</a>
     <nav class="nav__links" aria-label="Primary">
       <a href="#how"><span class="lang-es">Cómo funciona</span><span class="lang-en">How it works</span></a>
-      <a href="#features"><span class="lang-es">Funciones</span><span class="lang-en">Features</span></a>
-      <a href="#privacy"><span class="lang-es">Privacidad</span><span class="lang-en">Privacy</span></a>
+      <a href="#budget"><span class="lang-es">Presupuesto</span><span class="lang-en">Budget</span></a>
+      <a href="#insights">Insights</a>
       <a href="#faq">FAQ</a>
     </nav>
     <div class="nav__tools">
@@ -64,8 +70,8 @@
         <button type="button" data-set-lang="es" class="active">ES</button>
         <button type="button" data-set-lang="en">EN</button>
       </div>
-      <a class="btn btn--primary" href="https://play.google.com/store/apps/details?id=com.zerion.centurio">
-        <span class="lang-es">Descargar</span><span class="lang-en">Download</span>
+      <a class="btn btn--accent" href="https://play.google.com/store/apps/details?id=com.zerion.centurio">
+        <span class="lang-es">Comienza</span><span class="lang-en">Get started</span>
       </a>
     </div>
   </div>
@@ -76,278 +82,314 @@
 
 <!-- ============================ HERO ============================ -->
 <section class="hero container">
-  <div class="hero__grid">
-    <div class="hero__copy">
-      <p class="eyebrow"><span class="lang-es">Registro invisible de gastos</span><span class="lang-en">Invisible expense tracking</span></p>
-      <h1>
-        <span class="lang-es">Controla tu dinero sin volver a llevar las cuentas a mano.</span>
-        <span class="lang-en">Take control of your money — without ever doing the books again.</span>
-      </h1>
-      <p class="lead">
-        <span class="lang-es">Habla, escribe o escanea un recibo. La IA de Centurio entiende el monto, el comercio y la categoría — y tu panel <strong>“Respira”</strong> te muestra exactamente cómo vas, de un vistazo.</span>
-        <span class="lang-en">Speak, type, or snap a receipt. Centurio's AI captures the amount, the vendor and the category — and your calm <strong>“Breathe”</strong> dashboard shows exactly where you stand, at a glance.</span>
-      </p>
-      <div class="cta-row">
-        <a class="store-badge" href="https://play.google.com/store/apps/details?id=com.zerion.centurio" aria-label="Google Play">
-          <svg class="i" width="26" height="26" style="stroke-width:1.6"><use href="#play"/></svg>
-          <span>
-            <span class="sb-small lang-es">DISPONIBLE EN</span><span class="sb-small lang-en">GET IT ON</span>
-            <span class="sb-big">Google Play</span>
-          </span>
-        </a>
-        <a class="btn btn--ghost btn--lg" href="#how">
-          <span class="lang-es">Ver cómo funciona</span><span class="lang-en">See how it works</span>
-          <svg class="i ic" width="18" height="18"><use href="#arrow-right"/></svg>
-        </a>
-      </div>
-      <div class="hero__proof">
-        <div class="pf"><b>&lt; 7 s</b><span class="lang-es">por gasto registrado</span><span class="lang-en">to log an expense</span></div>
-        <div class="pf"><b>$0</b><span class="lang-es">gratis · sin anuncios</span><span class="lang-en">free · no ads</span></div>
-        <div class="pf"><b>3</b><span class="lang-es">formas: voz · texto · recibo</span><span class="lang-en">ways: voice · text · receipt</span></div>
-      </div>
+  <div class="hero__copy">
+    <p class="eyebrow reveal"><span class="lang-es">Registro invisible de gastos</span><span class="lang-en">Invisible expense tracking</span></p>
+    <h1 class="reveal" data-d="1">
+      <span class="lang-es">Toma el control de tu dinero.</span>
+      <span class="lang-en">Take control of your money.</span>
+    </h1>
+    <p class="lead reveal" data-d="2">
+      <span class="lang-es">Habla, escribe o escanea un recibo. La IA de Centurio entiende el monto, el comercio y la categoría — y tu panel <strong>“Respira”</strong> te muestra cómo vas, de un vistazo.</span>
+      <span class="lang-en">Speak, type, or snap a receipt. Centurio's AI captures the amount, the vendor and the category — and your calm <strong>“Breathe”</strong> dashboard shows where you stand, at a glance.</span>
+    </p>
+    <div class="cta-row reveal" data-d="3">
+      <a class="store-badge" href="https://play.google.com/store/apps/details?id=com.zerion.centurio" aria-label="Google Play">
+        <svg class="i" width="26" height="26" style="stroke-width:1.6"><use href="#play"/></svg>
+        <span>
+          <span class="sb-small lang-es">DISPONIBLE EN</span><span class="sb-small lang-en">GET IT ON</span>
+          <span class="sb-big">Google Play</span>
+        </span>
+      </a>
+      <a class="btn btn--ghost btn--lg" href="#how">
+        <span class="lang-es">Ver cómo funciona</span><span class="lang-en">See how it works</span>
+        <svg class="i ic" width="18" height="18"><use href="#arrow-right"/></svg>
+      </a>
     </div>
+    <p class="cta-note reveal" data-d="4"><span class="lang-es">Gratis · Sin anuncios · Borra tus datos cuando quieras</span><span class="lang-en">Free · No ads · Delete your data anytime</span></p>
+  </div>
 
-    <div class="hero__device">
-      <div>
-      <div class="device" role="img" aria-label="Centurio dashboard preview">
-        <div class="device__notch"></div>
-        <div class="device__screen">
-          <div class="scr">
-            <div class="scr__health"><b>82</b><span class="lang-es">BIEN</span><span class="lang-en">GREAT</span></div>
-            <div class="scr__label"><span class="lang-es">Gastado hoy</span><span class="lang-en">Spent today</span></div>
-            <div class="scr__total">$66.70</div>
-            <div class="scr__sub"><span class="lang-es">Te quedan $23 para hoy</span><span class="lang-en">$23 left for today</span></div>
-
-            <div class="scr__pulse-l"><span class="lang-es">PULSO DE GASTO</span><span class="lang-en">SPENDING PULSE</span></div>
-            <div class="heat">
-              <i class="ok"></i><i class="ok"></i><i class="warn"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="over"></i><i class="ok"></i><i class="ok"></i><i class="warn"></i>
-              <i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="warn"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="over"></i><i class="ok"></i>
-              <i class="ok"></i><i class="warn"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="dim"></i><i class="dim"></i><i class="dim"></i><i class="dim"></i><i class="dim"></i>
+  <div class="hero__device reveal" data-d="2">
+    <div class="phone float">
+      <div class="phone__notch"></div>
+      <div class="scrn">
+        <div class="scrn__body s-today">
+          <div class="top">
+            <div>
+              <div class="amt">$66.70</div>
+              <span class="amt-label">Spent today</span>
             </div>
-
-            <div class="scr__list">
-              <div class="txr">
-                <span class="ico" style="background:var(--c-dining)"><svg class="i" width="15" height="15"><use href="#utensils"/></svg></span>
-                <span class="mid"><b><span class="lang-es">Almuerzo · La Esquina</span><span class="lang-en">Lunch · La Esquina</span></b><span>12:40</span></span>
-                <span class="amt">$12.50</span>
-              </div>
-              <div class="txr">
-                <span class="ico" style="background:var(--c-transport)"><svg class="i" width="15" height="15"><use href="#car"/></svg></span>
-                <span class="mid"><b>Uber<span class="dot-review"></span></b><span class="lang-es">por revisar</span><span class="lang-en">needs review</span></span>
-                <span class="amt">$8.00</span>
-              </div>
-              <div class="txr">
-                <span class="ico" style="background:var(--c-groceries)"><svg class="i" width="15" height="15"><use href="#cart"/></svg></span>
-                <span class="mid"><b>Supermaxi</b><span>09:15</span></span>
-                <span class="amt">$46.20</span>
-              </div>
-            </div>
-
-            <div class="scr__fab">
-              <span class="fab fab--side"><svg class="i" width="18" height="18"><use href="#keyboard"/></svg></span>
-              <span class="fab fab--mic"><svg class="i" width="24" height="24"><use href="#mic"/></svg></span>
-              <span class="fab fab--side"><svg class="i" width="18" height="18"><use href="#camera"/></svg></span>
-            </div>
+            <div class="health"><b>82</b><span>EXCELLENT</span></div>
+          </div>
+          <div class="pulse-l cap">Spending pulse</div>
+          <div class="heat">
+            <i class="ok"></i><i class="ok"></i><i class="warn"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="over"></i><i class="ok"></i><i class="ok"></i><i class="warn"></i>
+            <i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="warn"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="over"></i><i class="ok"></i>
+            <i class="ok"></i><i class="warn"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="dim"></i><i class="dim"></i><i class="dim"></i><i class="dim"></i><i class="dim"></i>
+          </div>
+          <div class="list">
+            <div class="trow"><div class="mid"><b>Supermaxi</b><span>Groceries</span></div><div class="ta">−$46.20</div></div>
+            <div class="trow"><span class="dot"></span><div class="mid"><b>Uber</b><span>Transportation</span></div><div class="ta">−$8.00</div></div>
+            <div class="trow"><div class="mid"><b>La Esquina</b><span>Dining</span></div><div class="ta">−$12.50</div></div>
+          </div>
+          <div class="fabs">
+            <div class="fcol"><span class="fbtn fbtn--side"><svg class="i"><use href="#keyboard"/></svg></span><span>Type</span></div>
+            <div class="fcol"><span class="fbtn fbtn--mic"><svg class="i"><use href="#mic"/></svg></span><span>Hold to speak</span></div>
+            <div class="fcol"><span class="fbtn fbtn--side"><svg class="i"><use href="#camera"/></svg></span><span>Scan</span></div>
           </div>
         </div>
-      </div>
-      <div class="center">
-        <span class="spoken">
-          <span class="wave"><i></i><i></i><i></i><i></i><i></i></span>
-          <span class="lang-es">“Gasté doce con cincuenta en el almuerzo”</span>
-          <span class="lang-en">“I spent twelve fifty on lunch”</span>
-        </span>
-      </div>
+        <div class="tabbar">
+          <div class="tab active"><svg class="i"><use href="#home"/></svg><span>Today</span></div>
+          <div class="tab"><svg class="i"><use href="#layout"/></svg><span>Insights</span></div>
+          <div class="tab"><svg class="i"><use href="#tag"/></svg><span>Categories</span></div>
+          <div class="tab"><svg class="i"><use href="#settings"/></svg><span>Budget</span></div>
+        </div>
       </div>
     </div>
+  </div>
+
+  <div class="center">
+    <span class="hero__caption reveal">
+      <span class="wave"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="lang-es">“Gasté doce con cincuenta en el almuerzo”</span>
+      <span class="lang-en">“I spent twelve fifty on lunch”</span>
+    </span>
   </div>
 </section>
 
 <!-- ======================= TRUST STRIP ======================= -->
 <section class="trust">
   <div class="container trust__row">
-    <span class="trust__item"><svg class="i" width="17" height="17"><use href="#ban"/></svg><span class="lang-es">Sin anuncios</span><span class="lang-en">No ads</span></span>
-    <span class="trust__item"><svg class="i" width="17" height="17"><use href="#wallet"/></svg><span class="lang-es">Sin suscripción</span><span class="lang-en">No subscription</span></span>
-    <span class="trust__item"><svg class="i" width="17" height="17"><use href="#lock"/></svg><span class="lang-es">Cifrado en tránsito y en reposo</span><span class="lang-en">Encrypted in transit & at rest</span></span>
-    <span class="trust__item"><svg class="i" width="17" height="17"><use href="#eye-off"/></svg><span class="lang-es">Sin rastreadores</span><span class="lang-en">No trackers</span></span>
-    <span class="trust__item"><svg class="i" width="17" height="17"><use href="#trash"/></svg><span class="lang-es">Borra tus datos cuando quieras</span><span class="lang-en">Delete your data anytime</span></span>
-  </div>
-</section>
-
-<!-- ======================= PROBLEM / EMPATHY ======================= -->
-<section class="section problem">
-  <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><span class="lang-es">El verdadero problema</span><span class="lang-en">The real problem</span></p>
-      <h2><span class="lang-es">No abandonas tu presupuesto porque te falte disciplina.</span><span class="lang-en">You don't quit budgeting because you lack discipline.</span></h2>
-      <p><span class="lang-es">Lo abandonas porque registrar cada gasto a mano es tedioso, lento y fácil de olvidar. Después de unos días, dejas de anotar. Y sin datos, cualquier presupuesto es solo una buena intención.</span><span class="lang-en">You quit because logging every expense by hand is tedious, slow and easy to forget. After a few days, you stop. And without data, any budget is just a good intention.</span></p>
-    </div>
-    <div class="problem__grid">
-      <div class="pcard">
-        <div class="pico"><svg class="i" width="19" height="19"><use href="#clock"/></svg></div>
-        <h3><span class="lang-es">Hojas de cálculo que nadie mantiene</span><span class="lang-en">Spreadsheets nobody keeps up</span></h3>
-        <p><span class="lang-es">Abrir una app, elegir categoría, escribir el monto… para cada café. La fricción te gana.</span><span class="lang-en">Open an app, pick a category, type the amount… for every coffee. Friction wins.</span></p>
-      </div>
-      <div class="pcard">
-        <div class="pico"><svg class="i" width="19" height="19"><use href="#eye-off"/></svg></div>
-        <h3><span class="lang-es">No sabes en qué se te va</span><span class="lang-en">You don't know where it goes</span></h3>
-        <p><span class="lang-es">Llegas a fin de mes y el dinero simplemente “desapareció”. Sin registro, no hay claridad.</span><span class="lang-en">The month ends and the money just “vanished.” No record, no clarity.</span></p>
-      </div>
-      <div class="pcard">
-        <div class="pico"><svg class="i" width="19" height="19"><use href="#zap"/></svg></div>
-        <h3><span class="lang-es">Apps que estresan más</span><span class="lang-en">Apps that add stress</span></h3>
-        <p><span class="lang-es">Gráficos abrumadores, banners, notificaciones. Querías paz mental, no otra app ruidosa.</span><span class="lang-en">Overwhelming charts, banners, notifications. You wanted peace of mind, not more noise.</span></p>
-      </div>
-    </div>
+    <span class="trust__item reveal"><svg class="i"><use href="#ban"/></svg><span class="lang-es">Sin anuncios</span><span class="lang-en">No ads</span></span>
+    <span class="trust__item reveal" data-d="1"><svg class="i"><use href="#wallet"/></svg><span class="lang-es">Sin suscripción</span><span class="lang-en">No subscription</span></span>
+    <span class="trust__item reveal" data-d="2"><svg class="i"><use href="#lock"/></svg><span class="lang-es">Cifrado</span><span class="lang-en">Encrypted</span></span>
+    <span class="trust__item reveal" data-d="3"><svg class="i"><use href="#eye-off"/></svg><span class="lang-es">Sin rastreadores</span><span class="lang-en">No trackers</span></span>
+    <span class="trust__item reveal" data-d="4"><svg class="i"><use href="#globe"/></svg><span class="lang-es">Español e inglés</span><span class="lang-en">Spanish &amp; English</span></span>
   </div>
 </section>
 
 <!-- ======================= HOW IT WORKS ======================= -->
 <section class="section" id="how">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><span class="lang-es">La solución</span><span class="lang-en">The solution</span></p>
-      <h2><span class="lang-es">Registrar un gasto debería tomar segundos. Ahora toma eso.</span><span class="lang-en">Logging an expense should take seconds. Now it does.</span></h2>
-      <p><span class="lang-es">Centurio elimina el trabajo manual. Tú solo dices lo que pasó; la inteligencia artificial hace el resto.</span><span class="lang-en">Centurio removes the manual work. You just say what happened; the AI does the rest.</span></p>
+    <div class="section-head reveal">
+      <p class="eyebrow" style="justify-content:center"><span class="lang-es">La solución</span><span class="lang-en">The solution</span></p>
+      <h2><span class="lang-es">Registrar un gasto toma segundos.</span><span class="lang-en">Logging an expense takes seconds.</span></h2>
+      <p><span class="lang-es">Tú solo dices lo que pasó; la inteligencia artificial hace el resto.</span><span class="lang-en">You just say what happened; the AI does the rest.</span></p>
     </div>
     <div class="steps">
-      <div class="step">
-        <div class="step__icon"><svg class="i" width="22" height="22"><use href="#mic"/></svg></div>
+      <div class="step reveal">
+        <div class="step__icon"><svg class="i"><use href="#mic"/></svg></div>
         <div class="step__n">01</div>
         <h3><span class="lang-es">Habla, escribe o escanea</span><span class="lang-en">Speak, type or scan</span></h3>
-        <p><span class="lang-es">Di “veinte en gasolina”, escríbelo en una frase, o toma una foto del recibo. Como te sea más natural.</span><span class="lang-en">Say “twenty on gas,” type it in one sentence, or snap a photo of the receipt. Whatever's natural.</span></p>
+        <p><span class="lang-es">Di “veinte en gasolina”, escríbelo, o toma una foto del recibo.</span><span class="lang-en">Say “twenty on gas,” type it, or snap a photo of the receipt.</span></p>
       </div>
-      <div class="step">
-        <div class="step__icon"><svg class="i" width="22" height="22"><use href="#sparkles"/></svg></div>
+      <div class="step reveal" data-d="1">
+        <div class="step__icon"><svg class="i"><use href="#sparkles"/></svg></div>
         <div class="step__n">02</div>
         <h3><span class="lang-es">La IA lo entiende</span><span class="lang-en">The AI understands it</span></h3>
-        <p><span class="lang-es">Extrae el monto, el comercio y la categoría — incluso varios gastos en una sola frase. Tú confirmas con un toque.</span><span class="lang-en">It extracts the amount, the vendor and the category — even several expenses in one sentence. You confirm with a tap.</span></p>
+        <p><span class="lang-es">Extrae el monto, el comercio y la categoría. Tú confirmas con un toque.</span><span class="lang-en">It extracts the amount, vendor and category. You confirm with a tap.</span></p>
       </div>
-      <div class="step">
-        <div class="step__icon"><svg class="i" width="22" height="22"><use href="#leaf"/></svg></div>
+      <div class="step reveal" data-d="2">
+        <div class="step__icon"><svg class="i"><use href="#leaf"/></svg></div>
         <div class="step__n">03</div>
         <h3><span class="lang-es">Respira</span><span class="lang-en">Breathe</span></h3>
-        <p><span class="lang-es">Tu panel se actualiza al instante: total del día, salud de tu presupuesto y tendencia. Claridad sin esfuerzo.</span><span class="lang-en">Your dashboard updates instantly: today's total, your budget health and your trend. Clarity, effortlessly.</span></p>
+        <p><span class="lang-es">Tu panel se actualiza al instante: total, salud y tendencia.</span><span class="lang-en">Your dashboard updates instantly: total, health and trend.</span></p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ======================= BEFORE / AFTER ======================= -->
-<section class="section section--tight">
+<!-- ======================= FEATURE 1 · BUDGET ======================= -->
+<section class="section" id="budget">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><span class="lang-es">Tú, antes y después</span><span class="lang-en">You, before and after</span></p>
-      <h2><span class="lang-es">De perseguir recibos a tenerlo todo claro.</span><span class="lang-en">From chasing receipts to total clarity.</span></h2>
-    </div>
-    <div class="ba">
-      <div class="ba__col ba__col--before">
-        <div class="ba__head"><span class="lang-es">Sin Centurio</span><span class="lang-en">Without Centurio</span></div>
-        <div class="ba__row"><span class="k"><span class="lang-es">Tienes</span><span class="lang-en">You have</span></span><span class="v"><span class="lang-es">Una app que abriste dos veces y una hoja de cálculo a medias.</span><span class="lang-en">An app you opened twice and a half-finished spreadsheet.</span></span></div>
-        <div class="ba__row"><span class="k"><span class="lang-es">Sientes</span><span class="lang-en">You feel</span></span><span class="v"><span class="lang-es">Culpa y ansiedad cada vez que pasas la tarjeta.</span><span class="lang-en">Guilt and anxiety every time you tap your card.</span></span></div>
-        <div class="ba__row"><span class="k"><span class="lang-es">Tu día</span><span class="lang-en">Your day</span></span><span class="v"><span class="lang-es">Olvidas anotar, te rindes, y a fin de mes adivinas.</span><span class="lang-en">You forget to log, give up, and guess at month-end.</span></span></div>
-        <div class="ba__row"><span class="k"><span class="lang-es">Estatus</span><span class="lang-en">Status</span></span><span class="v"><span class="lang-es">“No sé en qué se me fue el sueldo.”</span><span class="lang-en">“I don't know where my paycheck went.”</span></span></div>
+    <div class="feature">
+      <div class="feature__copy reveal">
+        <span class="feature__tag"><svg class="i" width="13" height="13"><use href="#wallet"/></svg> <span class="lang-es">Presupuesto</span><span class="lang-en">Budget</span></span>
+        <h2><span class="lang-es">Presupuesto inteligente</span><span class="lang-en">Smart budgeting</span></h2>
+        <p><span class="lang-es">Define un tope mensual y repártelo por categoría con deslizadores. Centurio calcula cuánto puedes gastar hoy y te mantiene siempre un paso adelante.</span><span class="lang-en">Set a monthly cap and split it across categories with sliders. Centurio computes how much you can safely spend today and keeps you a step ahead.</span></p>
+        <ul class="feature__list">
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">“Disponible para hoy” calculado en tiempo real</span><span class="lang-en">Real-time “safe to spend today”</span></li>
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Límites por categoría con barras de progreso</span><span class="lang-en">Per-category limits with progress bars</span></li>
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Multi-moneda: USD, MXN, EUR, COP, ARS, PEN…</span><span class="lang-en">Multi-currency: USD, MXN, EUR, COP, ARS, PEN…</span></li>
+        </ul>
       </div>
-      <div class="ba__col ba__col--after">
-        <div class="ba__head"><span class="lang-es">Con Centurio</span><span class="lang-en">With Centurio</span></div>
-        <div class="ba__row"><svg class="i ba__mark" width="16" height="16" style="color:var(--green-deep)"><use href="#check"/></svg><span class="v"><span class="lang-es"><strong>Tienes</strong> un registro completo creado con solo hablar.</span><span class="lang-en"><strong>You have</strong> a complete record built just by speaking.</span></span></div>
-        <div class="ba__row"><svg class="i ba__mark" width="16" height="16" style="color:var(--green-deep)"><use href="#check"/></svg><span class="v"><span class="lang-es"><strong>Sientes</strong> calma: sabes exactamente cuánto puedes gastar hoy.</span><span class="lang-en"><strong>You feel</strong> calm: you know exactly how much you can spend today.</span></span></div>
-        <div class="ba__row"><svg class="i ba__mark" width="16" height="16" style="color:var(--green-deep)"><use href="#check"/></svg><span class="v"><span class="lang-es"><strong>Tu día</strong> incluye un gesto de 5 segundos, y listo.</span><span class="lang-en"><strong>Your day</strong> includes one 5-second gesture, and you're done.</span></span></div>
-        <div class="ba__row"><svg class="i ba__mark" width="16" height="16" style="color:var(--green-deep)"><use href="#check"/></svg><span class="v"><span class="lang-es"><strong>Estatus:</strong> “Tengo el control. Y por fin, paz mental.”</span><span class="lang-en"><strong>Status:</strong> “I'm in control. And finally, peace of mind.”</span></span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ======================= FEATURES (bento) ======================= -->
-<section class="section" id="features">
-  <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><span class="lang-es">Todo lo que hace por ti</span><span class="lang-en">Everything it does for you</span></p>
-      <h2><span class="lang-es">Potente por dentro. Sereno por fuera.</span><span class="lang-en">Powerful inside. Serene outside.</span></h2>
-    </div>
-    <div class="bento">
-      <div class="fcard">
-        <div class="ficon bg-ink"><svg class="i" width="22" height="22"><use href="#mic"/></svg></div>
-        <h3><span class="lang-es">Registro por voz</span><span class="lang-en">Voice logging</span></h3>
-        <p><span class="lang-es">Habla con naturalidad —“veinticinco en el súper”— y queda registrado. Sin teclear.</span><span class="lang-en">Just talk naturally — “twenty-five at the store” — and it's logged. No typing.</span></p>
-      </div>
-      <div class="fcard">
-        <div class="ficon bg-shopping"><svg class="i" width="22" height="22"><use href="#camera"/></svg></div>
-        <h3><span class="lang-es">Escaneo de recibos</span><span class="lang-en">Receipt scanning</span></h3>
-        <p><span class="lang-es">Foto al recibo y Centurio lee el comercio y el total automáticamente, listo para confirmar.</span><span class="lang-en">Snap a receipt and Centurio reads the vendor and total automatically, ready to confirm.</span></p>
-      </div>
-      <div class="fcard">
-        <div class="ficon bg-transport"><svg class="i" width="22" height="22"><use href="#keyboard"/></svg></div>
-        <h3><span class="lang-es">Texto a tu manera</span><span class="lang-en">Type it your way</span></h3>
-        <p><span class="lang-es">Una frase, varios gastos: “30 súper, 15 taxi” registra los dos, ya categorizados.</span><span class="lang-en">One sentence, several expenses: “30 groceries, 15 taxi” logs both, already categorized.</span></p>
-      </div>
-      <div class="fcard">
-        <div class="ficon bg-ent"><svg class="i" width="22" height="22"><use href="#repeat"/></svg></div>
-        <h3><span class="lang-es">Aprende tus hábitos</span><span class="lang-en">Learns your habits</span></h3>
-        <p><span class="lang-es">Corrige una categoría una vez y Centurio recuerda ese comercio la próxima vez.</span><span class="lang-en">Correct a category once and Centurio remembers that vendor next time.</span></p>
-      </div>
-      <div class="fcard">
-        <div class="ficon bg-groceries"><svg class="i" width="22" height="22"><use href="#wallet"/></svg></div>
-        <h3><span class="lang-es">Multi-moneda</span><span class="lang-en">Multi-currency</span></h3>
-        <p><span class="lang-es">USD, MXN, EUR, COP, ARS, CLP, PEN y más. Tu moneda, bien formateada.</span><span class="lang-en">USD, MXN, EUR, COP, ARS, CLP, PEN and more. Your currency, properly formatted.</span></p>
-      </div>
-      <div class="fcard">
-        <div class="ficon bg-utilities"><svg class="i" width="22" height="22"><use href="#globe"/></svg></div>
-        <h3><span class="lang-es">Habla tu idioma</span><span class="lang-en">Speaks your language</span></h3>
-        <p><span class="lang-es">Español, inglés o una mezcla de ambos. Entiende “bucks”, “lucas”, “veinte”…</span><span class="lang-en">Spanish, English, or a mix of both. It understands “bucks,” colloquial numbers and slang.</span></p>
-      </div>
-
-      <div class="fcard fcard--full">
-        <div class="ft-copy">
-          <div class="ficon bg-health"><svg class="i" width="22" height="22"><use href="#activity"/></svg></div>
-          <h3><span class="lang-es">Tu panel “Respira”</span><span class="lang-en">Your “Breathe” dashboard</span></h3>
-          <p><span class="lang-es">Una puntuación de salud financiera, un mapa de calor de 31 días y el desglose por categoría. Toda tu situación, en segundos y sin abrumarte. Define un presupuesto mensual y un límite por categoría — Centurio te dice cuánto puedes gastar hoy.</span><span class="lang-en">A financial health score, a 31-day spending heatmap and a category breakdown. Your whole picture in seconds, without overwhelm. Set a monthly budget and per-category limits — Centurio tells you how much you can safely spend today.</span></p>
-        </div>
-        <div class="mini-insights" aria-hidden="true">
-          <div class="mini-bar"><span class="ml"><span class="lang-es">Comida</span><span class="lang-en">Dining</span></span><span class="mt"><i style="width:78%;background:var(--c-dining)"></i></span><span class="mv tabnum">$312</span></div>
-          <div class="mini-bar"><span class="ml"><span class="lang-es">Súper</span><span class="lang-en">Groceries</span></span><span class="mt"><i style="width:64%;background:var(--c-groceries)"></i></span><span class="mv tabnum">$256</span></div>
-          <div class="mini-bar"><span class="ml"><span class="lang-es">Transporte</span><span class="lang-en">Transport</span></span><span class="mt"><i style="width:41%;background:var(--c-transport)"></i></span><span class="mv tabnum">$164</span></div>
-          <div class="mini-bar"><span class="ml"><span class="lang-es">Ocio</span><span class="lang-en">Fun</span></span><span class="mt"><i style="width:29%;background:var(--c-entertainment)"></i></span><span class="mv tabnum">$116</span></div>
-          <div class="mini-bar"><span class="ml"><span class="lang-es">Servicios</span><span class="lang-en">Utilities</span></span><span class="mt"><i style="width:22%;background:var(--c-utilities)"></i></span><span class="mv tabnum">$88</span></div>
+      <div class="feature__media reveal" data-d="1">
+        <div class="phone float">
+          <div class="phone__notch"></div>
+          <div class="scrn">
+            <div class="scrn__body s-budget">
+              <div class="body">
+                <div class="ttl"><h4>Budget</h4><span class="saved">✓ Saved</span></div>
+                <div class="subt">Set your monthly cap, then split it across categories. Saves automatically.</div>
+                <div class="herocard">
+                  <div class="l">SAFE TO SPEND TODAY</div>
+                  <div class="v">$78.00</div>
+                  <div class="s">$936 left · 12 days to go</div>
+                </div>
+                <div class="st">TOTAL MONTHLY LIMIT</div>
+                <div class="bcard">
+                  <div class="bhead"><span class="n">Monthly cap</span><span class="vv">$1,500</span></div>
+                  <div class="prog"><i style="width:38%"></i></div>
+                  <div class="plabel">$564 spent · $936 left</div>
+                  <div class="sld"><div class="rail"><span class="fil" style="width:30%"></span></div><div class="thumb" style="left:30%"></div></div>
+                </div>
+                <div class="st">BY CATEGORY</div>
+                <div class="bcard">
+                  <div class="bcat">
+                    <div class="bhead"><span class="n">Dining</span><span class="vv">$300</span></div>
+                    <div class="prog"><i style="width:72%;background:#fff"></i></div>
+                    <div class="plabel">$216 of $300</div>
+                    <div class="sld"><div class="rail"><span class="fil" style="width:20%"></span></div><div class="thumb" style="left:20%"></div></div>
+                  </div>
+                  <div class="bcat">
+                    <div class="bhead"><span class="n">Groceries</span><span class="vv">$400</span></div>
+                    <div class="prog"><i style="width:55%"></i></div>
+                    <div class="plabel">$220 of $400</div>
+                    <div class="sld"><div class="rail"><span class="fil" style="width:27%"></span></div><div class="thumb" style="left:27%"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg class="i"><use href="#home"/></svg><span>Today</span></div>
+              <div class="tab"><svg class="i"><use href="#layout"/></svg><span>Insights</span></div>
+              <div class="tab"><svg class="i"><use href="#tag"/></svg><span>Categories</span></div>
+              <div class="tab active"><svg class="i"><use href="#settings"/></svg><span>Budget</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ======================= PRIVACY / CONTROL ======================= -->
-<section class="section privacy" id="privacy">
+<!-- ======================= FEATURE 2 · INSIGHTS ======================= -->
+<section class="section" id="insights">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><span class="lang-es">Tú mandas</span><span class="lang-en">You're in control</span></p>
-      <h2><span class="lang-es">Tus datos son tuyos. Punto.</span><span class="lang-en">Your data is yours. Full stop.</span></h2>
-      <p><span class="lang-es">Centurio no vende tus datos, no muestra anuncios y no te rastrea. Hacemos lo justo para que la app funcione — nada más.</span><span class="lang-en">Centurio doesn't sell your data, show ads, or track you. We do exactly what's needed to make the app work — nothing more.</span></p>
+    <div class="feature feature--rev">
+      <div class="feature__media reveal">
+        <div class="phone float">
+          <div class="phone__notch"></div>
+          <div class="scrn">
+            <div class="scrn__body s-insights">
+              <div class="filterbar">
+                <span class="pill">Today</span><span class="pill">Week</span><span class="pill active">Month</span><span class="pill">All</span>
+              </div>
+              <div class="body">
+                <div class="sum">
+                  <div class="l">THIS MONTH</div>
+                  <div class="v">$936.00</div>
+                  <div class="f"><span class="s">23 transactions</span><span class="b">+10 pts this week</span></div>
+                </div>
+                <div class="st">WEEKLY TREND</div>
+                <div class="wk">
+                  <div class="bars"><i style="height:55%"></i><i style="height:72%"></i><i style="height:48%"></i><i class="up" style="height:36%"></i></div>
+                  <div class="trend">↓ 12% vs last week</div>
+                </div>
+                <div class="st">BY CATEGORY</div>
+                <div class="cats">
+                  <div class="crow"><div class="cm"><svg class="i"><use href="#utensils"/></svg><span>Dining</span></div><div class="track"><i style="width:100%;background:var(--c-dining)"></i></div><div class="cv">$312</div></div>
+                  <div class="crow"><div class="cm"><svg class="i"><use href="#cart"/></svg><span>Groceries</span></div><div class="track"><i style="width:82%;background:var(--c-groceries)"></i></div><div class="cv">$256</div></div>
+                  <div class="crow"><div class="cm"><svg class="i"><use href="#car"/></svg><span>Transport</span></div><div class="track"><i style="width:53%;background:var(--c-transport)"></i></div><div class="cv">$164</div></div>
+                  <div class="crow"><div class="cm"><svg class="i"><use href="#film"/></svg><span>Entertain.</span></div><div class="track"><i style="width:37%;background:var(--c-entertainment)"></i></div><div class="cv">$116</div></div>
+                  <div class="crow"><div class="cm"><svg class="i"><use href="#bulb"/></svg><span>Utilities</span></div><div class="track"><i style="width:28%;background:var(--c-utilities)"></i></div><div class="cv">$88</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg class="i"><use href="#home"/></svg><span>Today</span></div>
+              <div class="tab active"><svg class="i"><use href="#layout"/></svg><span>Insights</span></div>
+              <div class="tab"><svg class="i"><use href="#tag"/></svg><span>Categories</span></div>
+              <div class="tab"><svg class="i"><use href="#settings"/></svg><span>Budget</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feature__copy reveal" data-d="1">
+        <span class="feature__tag"><svg class="i" width="13" height="13"><use href="#activity"/></svg> Insights</span>
+        <h2><span class="lang-es">Insights profundos</span><span class="lang-en">Deep insights</span></h2>
+        <p><span class="lang-es">Convierte números sueltos en una historia visual. Un mapa de calor de 31 días, tu puntuación de salud financiera y el desglose por categoría — toda tu situación en segundos, sin abrumarte.</span><span class="lang-en">Turn loose numbers into a visual story. A 31-day heatmap, your financial-health score and a category breakdown — your whole picture in seconds, without the overwhelm.</span></p>
+        <ul class="feature__list">
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Vistas por día, semana, mes o histórico</span><span class="lang-en">Day, week, month or all-time views</span></li>
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Tendencia semanal: ¿mejoras o no?</span><span class="lang-en">Weekly trend: improving or not?</span></li>
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Puntuación de salud, de un vistazo</span><span class="lang-en">A health score, at a glance</span></li>
+        </ul>
+      </div>
     </div>
-    <div class="privacy__grid">
-      <div class="priv">
-        <div class="pi"><svg class="i" width="19" height="19"><use href="#mic"/></svg></div>
-        <h3><span class="lang-es">Voz y fotos efímeras</span><span class="lang-en">Voice & photos are transient</span></h3>
-        <p><span class="lang-es">El audio y las fotos de recibos se procesan y no se almacenan de forma permanente.</span><span class="lang-en">Audio and receipt photos are processed and not permanently stored.</span></p>
+  </div>
+</section>
+
+<!-- ======================= FEATURE 3 · CATEGORIES ======================= -->
+<section class="section" id="categories">
+  <div class="container">
+    <div class="feature">
+      <div class="feature__copy reveal">
+        <span class="feature__tag"><svg class="i" width="13" height="13"><use href="#repeat"/></svg> <span class="lang-es">Aprende</span><span class="lang-en">Learns</span></span>
+        <h2><span class="lang-es">Categorización automática</span><span class="lang-en">Automatic categorization</span></h2>
+        <p><span class="lang-es">Cada transacción, perfectamente ubicada. Corrige una categoría una vez y Centurio recuerda ese comercio la próxima vez. Tú mandas: renombra, cambia el ícono o elimina cualquier categoría.</span><span class="lang-en">Every transaction, perfectly placed. Correct a category once and Centurio remembers that vendor next time. You're in control: rename, re-icon or delete any category.</span></p>
+        <ul class="feature__list">
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Aprende tus comercios → categorías</span><span class="lang-en">Learns your vendor → category rules</span></li>
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Categorías personalizables con iconos</span><span class="lang-en">Custom categories with icons</span></li>
+          <li><svg class="i"><use href="#check"/></svg><span class="lang-es">Iconografía limpia e intuitiva</span><span class="lang-en">Clean, intuitive iconography</span></li>
+        </ul>
       </div>
-      <div class="priv">
-        <div class="pi"><svg class="i" width="19" height="19"><use href="#lock"/></svg></div>
-        <h3><span class="lang-es">Cifrado de extremo a extremo del transporte</span><span class="lang-en">Encrypted transport</span></h3>
-        <p><span class="lang-es">Todo viaja por HTTPS/TLS y se guarda cifrado en reposo.</span><span class="lang-en">Everything travels over HTTPS/TLS and is stored encrypted at rest.</span></p>
-      </div>
-      <div class="priv">
-        <div class="pi"><svg class="i" width="19" height="19"><use href="#shield"/></svg></div>
-        <h3><span class="lang-es">Solo tú ves lo tuyo</span><span class="lang-en">Only you see yours</span></h3>
-        <p><span class="lang-es">Seguridad a nivel de fila: cada cuenta solo accede a sus propios datos.</span><span class="lang-en">Row-level security: each account can only access its own data.</span></p>
-      </div>
-      <div class="priv">
-        <div class="pi"><svg class="i" width="19" height="19"><use href="#trash"/></svg></div>
-        <h3><span class="lang-es">Borrado total, cuando quieras</span><span class="lang-en">Delete it all, anytime</span></h3>
-        <p><span class="lang-es">Elimina tu cuenta y todos tus datos desde la app, en un toque.</span><span class="lang-en">Delete your account and all your data from the app, in one tap.</span></p>
+      <div class="feature__media reveal" data-d="1">
+        <div class="phone float">
+          <div class="phone__notch"></div>
+          <div class="scrn">
+            <div class="scrn__body s-categories">
+              <div class="body">
+                <div class="st">ALL CATEGORIES</div>
+                <div class="hint">Rename, re-icon or delete any of them. Set their monthly budget in the Budget tab.</div>
+                <div class="catlist">
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#cart"/></svg></span><span class="cn">Groceries</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#utensils"/></svg></span><span class="cn">Dining</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#car"/></svg></span><span class="cn">Transportation</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#home"/></svg></span><span class="cn">Housing</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#bulb"/></svg></span><span class="cn">Utilities</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#film"/></svg></span><span class="cn">Entertainment</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#heart"/></svg></span><span class="cn">Healthcare</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                  <div class="catrow"><span class="ci"><svg class="i"><use href="#bag"/></svg></span><span class="cn">Shopping</span><span class="ca"><svg class="i"><use href="#pencil"/></svg><svg class="i"><use href="#trash"/></svg></span></div>
+                </div>
+              </div>
+              <div class="fab"><svg class="i"><use href="#plus"/></svg></div>
+            </div>
+            <div class="tabbar">
+              <div class="tab"><svg class="i"><use href="#home"/></svg><span>Today</span></div>
+              <div class="tab"><svg class="i"><use href="#layout"/></svg><span>Insights</span></div>
+              <div class="tab active"><svg class="i"><use href="#tag"/></svg><span>Categories</span></div>
+              <div class="tab"><svg class="i"><use href="#settings"/></svg><span>Budget</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="center" style="margin-top:36px">
-      <a class="btn btn--ghost" href="legal/privacy.html"><span class="lang-es">Leer la Política de Privacidad</span><span class="lang-en">Read the Privacy Policy</span> <svg class="i ic" width="18" height="18"><use href="#arrow-right"/></svg></a>
+  </div>
+</section>
+
+<!-- ======================= TESTIMONIALS ======================= -->
+<!-- TODO: reemplaza estas tarjetas con reseñas reales cuando las tengas. -->
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow" style="justify-content:center"><span class="lang-es">Hecho para ti</span><span class="lang-en">Made for you</span></p>
+      <h2><span class="lang-es">La claridad que buscabas.</span><span class="lang-en">The clarity you were after.</span></h2>
+    </div>
+    <div class="tcards">
+      <div class="tcard reveal">
+        <span class="stars"><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg></span>
+        <p class="q"><span class="lang-es">“Por fin sé en qué se me va el dinero, sin pelear con una hoja de cálculo.”</span><span class="lang-en">“I finally know where my money goes, without fighting a spreadsheet.”</span></p>
+        <div class="who"><span class="lang-es">— Reseña de ejemplo</span><span class="lang-en">— Sample review</span></div>
+      </div>
+      <div class="tcard reveal" data-d="1">
+        <span class="stars"><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg></span>
+        <p class="q"><span class="lang-es">“Registrar un gasto hablando es tan rápido que de verdad lo hago.”</span><span class="lang-en">“Logging by voice is so fast that I actually do it.”</span></p>
+        <div class="who"><span class="lang-es">— Reseña de ejemplo</span><span class="lang-en">— Sample review</span></div>
+      </div>
+      <div class="tcard reveal" data-d="2">
+        <span class="stars"><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg><svg class="i"><use href="#star"/></svg></span>
+        <p class="q"><span class="lang-es">“Control total, sin ruido. La app más tranquila que tengo.”</span><span class="lang-en">“Total control, no noise. The calmest app on my phone.”</span></p>
+        <div class="who"><span class="lang-es">— Reseña de ejemplo</span><span class="lang-en">— Sample review</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -355,46 +397,42 @@
 <!-- ======================= FAQ ======================= -->
 <section class="section" id="faq">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow"><span class="lang-es">Antes de descargar</span><span class="lang-en">Before you download</span></p>
+    <div class="section-head reveal">
+      <p class="eyebrow" style="justify-content:center"><span class="lang-es">Antes de descargar</span><span class="lang-en">Before you download</span></p>
       <h2><span class="lang-es">Preguntas frecuentes</span><span class="lang-en">Frequently asked</span></h2>
     </div>
-    <div class="faq">
+    <div class="faq reveal">
       <details class="qa">
-        <summary class="qa__q"><span><span class="lang-es">¿Centurio es realmente gratis?</span><span class="lang-en">Is Centurio really free?</span></span><svg class="i chev" width="20" height="20"><use href="#chevron-down"/></svg></summary>
-        <div class="qa__a"><p><span class="lang-es">Sí. Centurio es gratuito, sin anuncios y sin suscripciones. No hay compras dentro de la app.</span><span class="lang-en">Yes. Centurio is free, with no ads and no subscriptions. There are no in-app purchases.</span></p></div>
+        <summary class="qa__q"><span><span class="lang-es">¿Centurio es realmente gratis?</span><span class="lang-en">Is Centurio really free?</span></span><svg class="i chev"><use href="#chevron-down"/></svg></summary>
+        <div class="qa__a"><p><span class="lang-es">Sí. Gratis, sin anuncios y sin suscripciones. No hay compras dentro de la app.</span><span class="lang-en">Yes. Free, with no ads and no subscriptions. There are no in-app purchases.</span></p></div>
       </details>
       <details class="qa">
-        <summary class="qa__q"><span><span class="lang-es">¿Qué pasa con mi voz y mis fotos?</span><span class="lang-en">What happens to my voice and photos?</span></span><svg class="i chev" width="20" height="20"><use href="#chevron-down"/></svg></summary>
-        <div class="qa__a"><p><span class="lang-es">El audio y las imágenes de recibos se envían de forma segura para que la IA los procese y luego no se almacenan de forma permanente. Solo guardamos el resultado en texto (monto, comercio, categoría) que tú confirmas.</span><span class="lang-en">Audio and receipt images are sent securely for the AI to process and are then not permanently stored. We only keep the text result (amount, vendor, category) that you confirm.</span></p></div>
+        <summary class="qa__q"><span><span class="lang-es">¿Qué pasa con mi voz y mis fotos?</span><span class="lang-en">What happens to my voice and photos?</span></span><svg class="i chev"><use href="#chevron-down"/></svg></summary>
+        <div class="qa__a"><p><span class="lang-es">El audio y las imágenes se procesan de forma segura y luego no se almacenan de forma permanente. Solo guardamos el texto del gasto que tú confirmas.</span><span class="lang-en">Audio and images are processed securely and then not permanently stored. We only keep the expense text you confirm.</span></p></div>
       </details>
       <details class="qa">
-        <summary class="qa__q"><span><span class="lang-es">¿Funciona en español y con monedas de Latinoamérica?</span><span class="lang-en">Does it work in Spanish and with Latin American currencies?</span></span><svg class="i chev" width="20" height="20"><use href="#chevron-down"/></svg></summary>
-        <div class="qa__a"><p><span class="lang-es">Sí. Entiende español, inglés y mezclas de ambos, además de números coloquiales. Soporta múltiples monedas como USD, MXN, COP, ARS, CLP, PEN, entre otras.</span><span class="lang-en">Yes. It understands Spanish, English and a mix of both, plus colloquial numbers. It supports multiple currencies such as USD, MXN, COP, ARS, CLP, PEN, and more.</span></p></div>
+        <summary class="qa__q"><span><span class="lang-es">¿Funciona en español y con monedas de Latinoamérica?</span><span class="lang-en">Does it work in Spanish and with Latin American currencies?</span></span><svg class="i chev"><use href="#chevron-down"/></svg></summary>
+        <div class="qa__a"><p><span class="lang-es">Sí: entiende español, inglés y mezclas, y soporta USD, MXN, COP, ARS, CLP, PEN y más.</span><span class="lang-en">Yes: it understands Spanish, English and a mix, and supports USD, MXN, COP, ARS, CLP, PEN and more.</span></p></div>
       </details>
       <details class="qa">
-        <summary class="qa__q"><span><span class="lang-es">¿Y si la IA se equivoca?</span><span class="lang-en">What if the AI gets it wrong?</span></span><svg class="i chev" width="20" height="20"><use href="#chevron-down"/></svg></summary>
-        <div class="qa__a"><p><span class="lang-es">Siempre confirmas cada gasto antes de guardarlo y puedes editar el monto, el comercio o la categoría. Centurio es una herramienta de apoyo: tú tienes la última palabra. Revisa nuestro <a class="inline" href="legal/disclaimer.html">Aviso financiero y de IA</a>.</span><span class="lang-en">You always confirm each expense before it's saved, and you can edit the amount, vendor or category. Centurio is a supporting tool: you have the final say. See our <a class="inline" href="legal/disclaimer.html">Financial &amp; AI Disclaimer</a>.</span></p></div>
+        <summary class="qa__q"><span><span class="lang-es">¿Y si la IA se equivoca?</span><span class="lang-en">What if the AI gets it wrong?</span></span><svg class="i chev"><use href="#chevron-down"/></svg></summary>
+        <div class="qa__a"><p><span class="lang-es">Siempre confirmas cada gasto antes de guardarlo y puedes editar todo. Es una herramienta de apoyo: tú tienes la última palabra. Ver el <a href="legal/disclaimer.html">Aviso financiero y de IA</a>.</span><span class="lang-en">You always confirm each expense before saving and can edit everything. It's a supporting tool: you have the final say. See the <a href="legal/disclaimer.html">Financial &amp; AI Disclaimer</a>.</span></p></div>
       </details>
       <details class="qa">
-        <summary class="qa__q"><span><span class="lang-es">¿Centurio da asesoría financiera?</span><span class="lang-en">Does Centurio give financial advice?</span></span><svg class="i chev" width="20" height="20"><use href="#chevron-down"/></svg></summary>
-        <div class="qa__a"><p><span class="lang-es">No. Centurio es una herramienta informativa para organizar y visualizar tus gastos. No es asesoría financiera, contable, fiscal ni de inversión, y no somos un banco ni manejamos tu dinero.</span><span class="lang-en">No. Centurio is an informational tool to organize and visualize your spending. It is not financial, accounting, tax or investment advice, and we are not a bank and do not handle your money.</span></p></div>
-      </details>
-      <details class="qa">
-        <summary class="qa__q"><span><span class="lang-es">¿Cómo borro mi cuenta y mis datos?</span><span class="lang-en">How do I delete my account and data?</span></span><svg class="i chev" width="20" height="20"><use href="#chevron-down"/></svg></summary>
-        <div class="qa__a"><p><span class="lang-es">Desde la app: Perfil → Eliminar cuenta. Se borran permanentemente tu cuenta y todos tus datos. También puedes solicitarlo en nuestra <a class="inline" href="legal/eliminar-cuenta.html">página de eliminación de cuenta</a>.</span><span class="lang-en">In the app: Profile → Delete account. Your account and all your data are permanently deleted. You can also request it on our <a class="inline" href="legal/eliminar-cuenta.html">account deletion page</a>.</span></p></div>
+        <summary class="qa__q"><span><span class="lang-es">¿Cómo borro mi cuenta y mis datos?</span><span class="lang-en">How do I delete my account and data?</span></span><svg class="i chev"><use href="#chevron-down"/></svg></summary>
+        <div class="qa__a"><p><span class="lang-es">Desde la app: Perfil → Eliminar cuenta. También en la <a href="legal/eliminar-cuenta.html">página de eliminación</a>.</span><span class="lang-en">In the app: Profile → Delete account. Also on the <a href="legal/eliminar-cuenta.html">deletion page</a>.</span></p></div>
       </details>
     </div>
   </div>
 </section>
 
 <!-- ======================= FINAL CTA ======================= -->
-<section class="section final">
+<section class="final">
   <div class="container center">
-    <p class="eyebrow"><span class="lang-es">Empieza hoy</span><span class="lang-en">Start today</span></p>
-    <h2><span class="lang-es">Tu próximo gasto puede registrarse solo con decirlo.</span><span class="lang-en">Your next expense can be logged just by saying it.</span></h2>
-    <p style="max-width:560px;margin:0 auto 28px"><span class="lang-es">Únete a las personas que dejaron de pelear con hojas de cálculo y por fin tienen claridad. Gratis, para siempre.</span><span class="lang-en">Join the people who stopped fighting spreadsheets and finally have clarity. Free, forever.</span></p>
-    <div class="cta-row">
+    <p class="eyebrow reveal" style="justify-content:center"><span class="lang-es">Empieza hoy</span><span class="lang-en">Start today</span></p>
+    <h2 class="reveal" data-d="1"><span class="lang-es">La claridad es poder.</span><span class="lang-en">Clarity is power.</span></h2>
+    <p class="reveal" data-d="2"><span class="lang-es">Únete a la nueva era de la gestión financiera personal. Gratis, para siempre.</span><span class="lang-en">Join the new era of personal money management. Free, forever.</span></p>
+    <div class="cta-row reveal" data-d="3">
       <a class="store-badge" href="https://play.google.com/store/apps/details?id=com.zerion.centurio" aria-label="Google Play">
         <svg class="i" width="26" height="26" style="stroke-width:1.6"><use href="#play"/></svg>
         <span>
@@ -403,7 +441,7 @@
         </span>
       </a>
     </div>
-    <p class="cta-note"><span class="lang-es">Sin tarjeta · Sin anuncios · Borra tus datos cuando quieras</span><span class="lang-en">No card · No ads · Delete your data anytime</span></p>
+    <p class="cta-note reveal" data-d="3"><span class="lang-es">Sin tarjeta · Sin anuncios · Borra tus datos cuando quieras</span><span class="lang-en">No card · No ads · Delete your data anytime</span></p>
   </div>
 </section>
 
@@ -411,31 +449,35 @@
 
 <!-- ============================ FOOTER ============================ -->
 <footer class="footer">
+  <div class="footer__dots" aria-hidden="true"></div>
   <div class="container">
-    <div class="footer__grid">
+    <div class="footer__inner">
       <div class="footer__about">
         <div class="brand"><svg class="i logo" width="26" height="26"><use href="#logo"/></svg> Centurio</div>
         <p><span class="lang-es">El control de gastos de registro invisible. Habla, escribe o escanea — la IA hace el resto. Un proyecto de Zerion Studio.</span><span class="lang-en">The invisible-input expense tracker. Speak, type or scan — the AI does the rest. A Zerion Studio project.</span></p>
       </div>
-      <div>
-        <h4><span class="lang-es">Producto</span><span class="lang-en">Product</span></h4>
-        <ul>
-          <li><a href="#how"><span class="lang-es">Cómo funciona</span><span class="lang-en">How it works</span></a></li>
-          <li><a href="#features"><span class="lang-es">Funciones</span><span class="lang-en">Features</span></a></li>
-          <li><a href="#faq">FAQ</a></li>
-          <li><a href="https://play.google.com/store/apps/details?id=com.zerion.centurio"><span class="lang-es">Descargar</span><span class="lang-en">Download</span></a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="legal/privacy.html"><span class="lang-es">Política de Privacidad</span><span class="lang-en">Privacy Policy</span></a></li>
-          <li><a href="legal/terms.html"><span class="lang-es">Términos del Servicio</span><span class="lang-en">Terms of Service</span></a></li>
-          <li><a href="legal/disclaimer.html"><span class="lang-es">Aviso financiero y de IA</span><span class="lang-en">Financial &amp; AI Disclaimer</span></a></li>
-          <li><a href="legal/cookies.html"><span class="lang-es">Cookies</span><span class="lang-en">Cookies</span></a></li>
-          <li><a href="legal/eliminar-cuenta.html"><span class="lang-es">Eliminar cuenta y datos</span><span class="lang-en">Delete account &amp; data</span></a></li>
-          <li><a href="legal/aviso-legal.html"><span class="lang-es">Aviso legal</span><span class="lang-en">Legal notice</span></a></li>
-        </ul>
+      <div class="footer__links">
+        <div>
+          <h4><span class="lang-es">Producto</span><span class="lang-en">Product</span></h4>
+          <ul>
+            <li><a href="#how"><span class="lang-es">Cómo funciona</span><span class="lang-en">How it works</span></a></li>
+            <li><a href="#budget"><span class="lang-es">Presupuesto</span><span class="lang-en">Budget</span></a></li>
+            <li><a href="#insights">Insights</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="https://play.google.com/store/apps/details?id=com.zerion.centurio"><span class="lang-es">Descargar</span><span class="lang-en">Download</span></a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="legal/privacy.html"><span class="lang-es">Privacidad</span><span class="lang-en">Privacy</span></a></li>
+            <li><a href="legal/terms.html"><span class="lang-es">Términos</span><span class="lang-en">Terms</span></a></li>
+            <li><a href="legal/disclaimer.html"><span class="lang-es">Aviso financiero y de IA</span><span class="lang-en">Financial &amp; AI</span></a></li>
+            <li><a href="legal/cookies.html">Cookies</a></li>
+            <li><a href="legal/eliminar-cuenta.html"><span class="lang-es">Eliminar cuenta</span><span class="lang-en">Delete account</span></a></li>
+            <li><a href="legal/aviso-legal.html"><span class="lang-es">Aviso legal</span><span class="lang-en">Legal notice</span></a></li>
+          </ul>
+        </div>
       </div>
     </div>
     <div class="footer__bottom">

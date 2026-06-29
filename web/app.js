@@ -67,4 +67,23 @@
   if (y) {
     try { y.textContent = String(new Date().getFullYear()); } catch (e) {}
   }
+
+  // Scroll-reveal entrance animations (landing only; no-op elsewhere).
+  var reveals = document.querySelectorAll(".reveal");
+  if (reveals.length) {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) {
+      for (var k = 0; k < reveals.length; k++) reveals[k].classList.add("in");
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        for (var n = 0; n < entries.length; n++) {
+          if (entries[n].isIntersecting) {
+            entries[n].target.classList.add("in");
+            io.unobserve(entries[n].target);
+          }
+        }
+      }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+      for (var m = 0; m < reveals.length; m++) io.observe(reveals[m]);
+    }
+  }
 })();
