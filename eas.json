@@ -3,7 +3,7 @@
         "version": ">= 10.0.0",
         "appVersionSource": "remote"
     },
-    "_comment": "Secrets are NO LONGER stored here. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY as EAS environment variables per profile (eas env:create) so they are injected at build time without being committed. The Gemini key lives only as a Supabase Edge Function secret (supabase secrets set GEMINI_API_KEY=...) and never ships in the app.",
+    "_comment": "Only the PUBLIC Supabase values live here (the anon key is RLS-protected and ships inside every app anyway). The Gemini key is NEVER here — it lives only as a Supabase Edge Function secret (supabase secrets set GEMINI_API_KEY=...) and never reaches the client.",
     "build": {
         "development": {
             "developmentClient": true,
@@ -16,6 +16,10 @@
             },
             "android": {
                 "buildType": "apk"
+            },
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://dnkcthyxojbipngvfuaa.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRua2N0aHl4b2piaXBuZ3ZmdWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2Njg3ODQsImV4cCI6MjA5ODI0NDc4NH0.3fce4NgTEzlp1yJHx5DXyXVK-uWr5TcwmKUsSxPiOrs"
             }
         },
         "production": {
@@ -25,6 +29,10 @@
             },
             "ios": {
                 "resourceClass": "m-medium"
+            },
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://dnkcthyxojbipngvfuaa.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRua2N0aHl4b2piaXBuZ3ZmdWFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2Njg3ODQsImV4cCI6MjA5ODI0NDc4NH0.3fce4NgTEzlp1yJHx5DXyXVK-uWr5TcwmKUsSxPiOrs"
             }
         }
     },

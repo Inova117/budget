@@ -33,12 +33,10 @@ Items marked **[you]** need your accounts/keys; the rest is already in the repo.
 - [ ] **[you]** Rotate the OLD leaked Gemini key (it's in git history) in AI Studio.
 - [ ] **[you]** Confirm no `EXPO_PUBLIC_GEMINI_*` anywhere (already removed from the app/.env).
 
-## 3. Build env (EAS)
-- [ ] **[you]** Set production env vars (secrets are no longer in eas.json):
-  ```bash
-  eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL --value https://<ref>.supabase.co
-  eas env:create --environment production --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon key>
-  ```
+## 3. Build env (EAS) — already done
+The PUBLIC Supabase URL + anon key are in `eas.json` (preview + production `env`).
+They're not secret (the anon key is RLS-protected and ships in every app), so no
+`eas env:create` needed. The Gemini key is server-side only (step 1). ✅
 
 ## 4. Build & test on a REAL Android device
 > Everything so far was reviewed on web, where voice + camera don't run. Test on device.
